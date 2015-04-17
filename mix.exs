@@ -28,6 +28,9 @@ defmodule Telephonist.Mixfile do
   #
   # Type `mix help deps` for more examples and options
   defp deps do
-    [{:immortal, "~> 0.0.1"}]
+    [
+      {:immortal, "~> 0.0.1"},
+      {:ex_twiml, "~> 1.1.0"}
+    ]
   end
 end

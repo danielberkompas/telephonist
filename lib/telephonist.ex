@@ -10,8 +10,8 @@ defmodule Telephonist do
     children = [
       # Define workers and child supervisors to be supervised
       # worker(Telephonist.Worker, [arg1, arg2, arg3])
-      worker(Telephonist.CallTracker, []),
-      worker(Immortal.EtsTableManager, [Telephonist.CallTracker])
+      worker(Telephonist.CallManager, []),
+      worker(Immortal.EtsTableManager, [Telephonist.CallManager])
     ]
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html
