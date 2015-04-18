@@ -76,12 +76,12 @@ defmodule Telephonist.CallProcessor do
   end
 
   # When the call hasn't been tracked yet
-  def get_next_state({_, _, nil}, machine, twilio, options) do
+  defp get_next_state({_, _, nil}, machine, twilio, options) do
     machine.state(machine.initial_state, twilio, options)
   end
 
   # When the call has been tracked already
-  def get_next_state({_, _, state}, _, twilio, options) do
+  defp get_next_state({_, _, state}, _, twilio, options) do
     try do
       state.machine.transition(state.name, twilio, options)
     rescue

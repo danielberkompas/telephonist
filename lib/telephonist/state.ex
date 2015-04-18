@@ -24,6 +24,8 @@ defmodule Telephonist.State do
             options: %{},
             twiml: nil
 
+  @doc "Returns a 'complete' state, with data from a given state"
+  @spec complete(__MODULE__.t) :: __MODULE__.t
   def complete(state) do
     twiml = twiml do: nil
     %__MODULE__{

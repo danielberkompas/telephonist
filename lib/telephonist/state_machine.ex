@@ -11,15 +11,15 @@ defmodule Telephonist.StateMachine do
 
   You can use `Telephonist.StateMachine` in two ways:
 
-  A) Use the behaviour and implement all the callbacks yourself:
+  Use the behaviour and implement all the callbacks yourself:
 
       defmodule MyStateMachine do
         @behaviour Telephonist.StateMachine
       end
 
-  B) Use the `__using__` macro. This will set the `@behaviour` attribute, and
-     provide default implementations for `initial_state/0` and 
-     `on_transition_error/3`, as well as macros for constructing states:
+  Use the `__using__` macro. This will set the `@behaviour` attribute, and
+  provide default implementations for `initial_state/0` and 
+  `on_transition_error/3`, as well as macros for constructing states:
 
       defmodule MyStateMachine do
         uses Telephonist.StateMachine, initial_state: :introduction
