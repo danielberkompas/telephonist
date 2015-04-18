@@ -1,4 +1,4 @@
-defmodule Telephonist.CallManager do
+defmodule Telephonist.OngoingCalls do
   use GenServer
 
   @type sid    :: atom
@@ -14,7 +14,7 @@ defmodule Telephonist.CallManager do
   end
 
   @doc """
-  Retrieve the ETS table ID for the CallManager process.
+  Retrieve the ETS table ID for the OngoingCalls process.
   """
   @spec table :: integer
   def table, do: call(:table)

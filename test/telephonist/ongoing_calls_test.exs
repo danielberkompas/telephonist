@@ -1,50 +1,50 @@
-defmodule Telephonist.CallManagerTest do
+defmodule Telephonist.OngoingCallsTest do
   use ExUnit.Case
-  alias Telephonist.CallManager
+  alias Telephonist.OngoingCalls
 
   ###
   # Public API Tests
   ###
 
   test "has an ETS table" do
-    table = CallManager.table
-    assert is_integer(table), "ETS table was not transfered to CallManager"
+    table = OngoingCalls.table
+    assert is_integer(table), "ETS table was not transfered to OngoingCalls"
   end
 
   test "its ETS table survives even if it crashes" do
-    original_table = CallManager.table
+    original_table = OngoingCalls.table
     restart_manager
 
-    new_table = CallManager.table
-    assert is_integer(new_table), "CallManager was not repopulated with ETS table after reboot"
+    new_table = OngoingCalls.table
+    assert is_integer(new_table), "OngoingCalls was not repopulated with ETS table after reboot"
     assert is_list(:ets.info(new_table))
-    assert new_table == original_table, "New CallManager table does not match old"
+    assert new_table == original_table, "New OngoingCalls table does not match old"
   end
 
   test ".save_call can insert a call if its properly formatted" do
-    assert :ok == CallManager.save_call({:Sid, "in-progress", %Telephonist.State{}})
+    assert :ok == OngoingCalls.save_call({:Sid, "in-progress", %Telephonist.State{}})
   end
 
   test ".lookup_call can lookup a call by SID" do
-    CallManager.save_call({:Sid, "in-progress", %Telephonist.State{}})
-    {:ok, call} = CallManager.lookup_call(:Sid)
+    OngoingCalls.save_call({:Sid, "in-progress", %Telephonist.State{}})
+    {:ok, call} = OngoingCalls.lookup_call(:Sid)
     assert call == {:Sid, "in-progress", %Telephonist.State{}}
   end
 
   test ".lookup_call returns {:error, message} if call cannot be found" do
-    assert {:error, _msg} = CallManager.lookup_call(:nonexistent)
+    assert {:error, _msg} = OngoingCalls.lookup_call(:nonexistent)
   end
 
   test ".delete_call removes a call from the table" do
     call = {:DeleteMe, "in-progress", %{}}
-    CallManager.save_call(call)
+    OngoingCalls.save_call(call)
 
     # Ensure call is in database
-    assert {:ok, call} = CallManager.lookup_call(:DeleteMe)
+    assert {:ok, call} = OngoingCalls.lookup_call(:DeleteMe)
 
     # Delete, and try again
-    :ok = CallManager.delete_call(call)
-    assert {:error, _msg} = CallManager.lookup_call(:DeleteMe)
+    :ok = OngoingCalls.delete_call(call)
+    assert {:error, _msg} = OngoingCalls.lookup_call(:DeleteMe)
   end
 
   ###
@@ -91,7 +91,7 @@ defmodule Telephonist.CallManagerTest do
       CallStatus: "in-progress"
     }
 
-    state = CallManager.process(TestMachine, twilio, %{user: "daniel"})
+    state = OngoingCalls.process(TestMachine, twilio, %{user: "daniel"})
 
     assert state.machine      == TestMachine
     assert state.name         == :introduction
@@ -105,7 +105,7 @@ defmodule Telephonist.CallManagerTest do
       CallStatus: "failed"
     }
 
-    assert :complete = CallManager.process(TestMachine, twilio)
+    assert :complete = OngoingCalls.process(TestMachine, twilio)
   end
 
   test ".process can navigate to the :english state" do
@@ -136,16 +136,16 @@ defmodule Telephonist.CallManagerTest do
     }
 
     # set up initial state
-    CallManager.process(TestMachine, twilio)
+    OngoingCalls.process(TestMachine, twilio)
 
     # simulate user pressing digit
     twilio = Map.put(twilio, :Digits, digits)
-    CallManager.process(TestMachine, twilio)
+    OngoingCalls.process(TestMachine, twilio)
   end
 
   defp restart_manager do
-    pid = Process.whereis(CallManager)
+    pid = Process.whereis(OngoingCalls)
     Process.exit(pid, :normal)
-    CallManager.start_link
+    OngoingCalls.start_link
   end
 end
