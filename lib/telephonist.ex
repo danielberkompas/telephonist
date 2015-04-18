@@ -11,12 +11,28 @@ defmodule Telephonist do
       # Define workers and child supervisors to be supervised
       # worker(Telephonist.Worker, [arg1, arg2, arg3])
       worker(Telephonist.OngoingCalls, []),
-      worker(Immortal.EtsTableManager, [Telephonist.OngoingCalls])
+      worker(Telephonist.Subscription, []),
+      worker(Immortal.EtsTableManager, [Telephonist.OngoingCalls], id: OngoingCallsTableWatcher),
+      worker(Immortal.EtsTableManager, [Telephonist.Subscription], id: SubscriptionTableWatcher)
     ]
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Telephonist.Supervisor]
-    Supervisor.start_link(children, opts)
+    result = Supervisor.start_link(children, opts)
+
+    # Custom setup
+    Telephonist.Event.subscribe Telephonist.Logger, [
+      :start_processing,
+      :lookup_success,
+      :call_complete,
+      :attempt_transition,
+      :transition_error,
+      :next_state
+    ]
+
+    # End custom setup
+
+    result
   end
 end
