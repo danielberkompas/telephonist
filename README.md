@@ -1,4 +1,7 @@
 Telephonist
 ===========
 
-** TODO: Add description **
+More details coming soon.
+
+## License
+MIT.
