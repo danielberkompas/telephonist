@@ -1,5 +1,5 @@
 defmodule Telephonist.CallProcessor do
-  alias Telephonist.OngoingCalls
+  alias Telephonist.OngoingCall
   import Task
   import Telephonist.Event, only: [broadcast: 2]
 
@@ -56,7 +56,7 @@ defmodule Telephonist.CallProcessor do
   defp lookup(twilio) do
     sid = twilio[:CallSid] |> String.to_atom
 
-    case OngoingCalls.lookup(sid) do
+    case OngoingCall.lookup(sid) do
       {:ok, call} -> 
         broadcast :lookup_success, call
         call
@@ -74,9 +74,9 @@ defmodule Telephonist.CallProcessor do
     state = Map.put_new(state, :machine, machine)
     state = Map.put_new(state, :options, options)
 
-    OngoingCalls.save(call) # For debugging, garbage collecting
+    OngoingCall.save(call) # For debugging, garbage collecting
     :ok = state.machine.on_complete(call, twilio, options)
-    OngoingCalls.delete(call)
+    OngoingCall.delete(call)
 
     Telephonist.State.complete(state)
   end
@@ -86,7 +86,7 @@ defmodule Telephonist.CallProcessor do
     state = get_next_state(call, machine, twilio, options)
 
     call = {sid, status, state}
-    OngoingCalls.save(call)
+    OngoingCall.save(call)
     broadcast :next_state, call
 
     state

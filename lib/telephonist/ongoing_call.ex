@@ -1,4 +1,4 @@
-defmodule Telephonist.OngoingCalls do
+defmodule Telephonist.OngoingCall do
   use GenServer
 
   @moduledoc """
@@ -17,7 +17,7 @@ defmodule Telephonist.OngoingCalls do
   end
 
   @doc """
-  Retrieve the ETS table ID for the OngoingCalls process.
+  Retrieve the ETS table ID for the OngoingCall process.
   """
   @spec table :: integer
   def table, do: call(:table)
@@ -27,7 +27,7 @@ defmodule Telephonist.OngoingCalls do
 
   ## Example
 
-      iex> Telephonist.OngoingCalls.save({:CATest, "in-progress", %{}})
+      iex> Telephonist.OngoingCall.save({:CATest, "in-progress", %{}})
       :ok
   """
   @spec save(call) :: :ok

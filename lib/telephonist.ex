@@ -10,9 +10,9 @@ defmodule Telephonist do
     children = [
       # Define workers and child supervisors to be supervised
       # worker(Telephonist.Worker, [arg1, arg2, arg3])
-      worker(Telephonist.OngoingCalls, []),
+      worker(Telephonist.OngoingCall, []),
       worker(Telephonist.Subscription, []),
-      worker(Immortal.EtsTableManager, [Telephonist.OngoingCalls], id: OngoingCallsTableWatcher),
+      worker(Immortal.EtsTableManager, [Telephonist.OngoingCall], id: OngoingCallTableWatcher),
       worker(Immortal.EtsTableManager, [Telephonist.Subscription], id: SubscriptionTableWatcher)
     ]
 
