@@ -36,3 +36,9 @@ defmodule Telephonist.State do
     }
   end
 end
+
+defimpl Inspect, for: Telephonist.State do
+  def inspect(state, _opts) do
+    "#Telephonist.State<#{state.machine}, #{inspect state.name}, #{inspect state.options}, #{inspect state.twiml}>"
+  end
+end
