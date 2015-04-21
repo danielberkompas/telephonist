@@ -1,15 +1,11 @@
 defmodule Telephonist.Event do
-  alias Telephonist.Subscription
+  use GenEvent
 
-  @spec subscribe(atom, list) :: :ok
-  def subscribe(module, events) do
-    Subscription.add(module, events)
+  def start_link do
+    GenEvent.start_link(name: __MODULE__)
   end
 
-  @spec broadcast(atom, any) :: [Task.t]
-  def broadcast(event_name, event) do
-    for {module, events} <- Subscription.all,
-        event_name in events,
-        do: Task.async(fn -> module.on_event(event_name, event) end)
+  def notify(event, data) do
+    GenEvent.notify(__MODULE__, {event, data})
   end
 end

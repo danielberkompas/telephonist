@@ -1,7 +1,7 @@
 defmodule Telephonist.CallProcessor do
   alias Telephonist.OngoingCall
   import Task
-  import Telephonist.Event, only: [broadcast: 2]
+  import Telephonist.Event, only: [notify: 2]
 
   @shortdoc "Process calls using a `Telephonist.StateMachine`"
 
@@ -40,7 +40,7 @@ defmodule Telephonist.CallProcessor do
   @spec process(atom, map, map) :: Telephonist.State.t
   def process(machine, twilio, options \\ %{}) do
     twilio = for pair <- twilio, into: %{}, do: atomize_key(pair)
-    broadcast :start_processing, {machine, twilio, options}
+    notify :processing, {machine, twilio, options}
 
     result = async fn ->
       call = lookup(twilio)
@@ -58,18 +58,18 @@ defmodule Telephonist.CallProcessor do
 
     case OngoingCall.lookup(sid) do
       {:ok, call} -> 
-        broadcast :lookup_success, call
+        notify :lookup_succeeded, call
         call
       {:error, _} -> 
         call = {sid, twilio[:CallStatus], nil}
-        broadcast :lookup_failure, call
+        notify :lookup_failed, call
         call
     end
   end
 
   # When the call is complete
   defp do_processing({sid, _, state} = call, machine, %{CallStatus: status} = twilio, options) when status in @completed_statuses do
-    broadcast :call_complete, {sid, machine, twilio, options}
+    notify :completed, {sid, machine, twilio, options}
     state = state || %{}
     state = Map.put_new(state, :machine, machine)
     state = Map.put_new(state, :options, options)
@@ -87,7 +87,7 @@ defmodule Telephonist.CallProcessor do
 
     call = {sid, status, state}
     OngoingCall.save(call)
-    broadcast :next_state, call
+    notify :new_state, call
 
     state
   end
@@ -100,11 +100,11 @@ defmodule Telephonist.CallProcessor do
   # When the call has been tracked already
   defp get_next_state({sid, _, state}, _, twilio, options) do
     try do
-      broadcast :attempt_transition, {sid, state.machine, state.name, twilio, options}
+      notify :transition, {sid, state.machine, state.name, twilio, options}
       state.machine.transition(state.name, twilio, options)
     rescue
       e ->
-        broadcast :transition_error, {sid, e, state.machine, state.name, twilio, options}
+        notify :transition_failed, {sid, e, state.machine, state.name, twilio, options}
         state.machine.on_transition_error(e, state.name, twilio, options)
     end
   end
