@@ -3,10 +3,6 @@ defmodule Telephonist.OngoingCallTest do
   alias Telephonist.OngoingCall
   doctest Telephonist.OngoingCall
 
-  ###
-  # Public API Tests
-  ###
-
   test "has an ETS table" do
     table = OngoingCall.table
     assert is_integer(table), "ETS table was not transfered to OngoingCall"

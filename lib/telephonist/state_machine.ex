@@ -239,10 +239,6 @@ defmodule Telephonist.StateMachine do
     compile(name, twilio, options, block)
   end
 
-  ###
-  # Private Interface
-  ###
-
   defp compile(name, twilio, options, do: block) do
     {options, guards} = extract_options_and_guards(options)
 
