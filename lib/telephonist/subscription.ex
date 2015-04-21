@@ -5,13 +5,9 @@ defmodule Telephonist.Subscription do
     GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
   end
 
-  def add(module, events) do
-    cast({:add, module, events})
-  end
-
-  def all do
-    call :all
-  end
+  def add(module, events), do: cast({:add, module, events})
+  def all,                 do: call(:all)
+  def clear,               do: cast(:clear)
 
   ###
   # GenServer API
@@ -24,6 +20,11 @@ defmodule Telephonist.Subscription do
 
   def handle_cast({:add, module, events}, table) do
     :ets.insert(table, {module, events})
+    {:noreply, table}
+  end
+
+  def handle_cast(:clear, table) do
+    :ets.delete_all_objects(table)
     {:noreply, table}
   end
 
