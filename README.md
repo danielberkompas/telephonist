@@ -1,6 +1,8 @@
 Telephonist
 ===========
 
+[![Build Status](https://travis-ci.org/danielberkompas/telephonist.svg)](https://travis-ci.org/danielberkompas/telephonist)
+
 Telephonist makes it easy to design state machines for [Twilio][twilio] calls. 
 These state machines bring TwiML and logic together in one place, making call 
 flows easier to maintain.
