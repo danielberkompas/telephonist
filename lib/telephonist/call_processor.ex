@@ -1,6 +1,6 @@
 defmodule Telephonist.CallProcessor do
   alias Telephonist.OngoingCall
-  import Task
+  import Task, only: [async: 1, await: 1]
   import Telephonist.Event, only: [notify: 2]
 
   @shortdoc "Process calls using a `Telephonist.StateMachine`"
