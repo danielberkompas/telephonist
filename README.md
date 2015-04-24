@@ -33,8 +33,8 @@ properly.
 
 ### Basic Concepts
 
-Like most state machines, Telephonist State machines are based around two
-concepts: state and transitions.
+Like most state machines, Telephonist state machines are based on two concepts: 
+state and transitions.
 
 #### State
 
@@ -50,8 +50,8 @@ A state is represented by the `Telephonist.State` struct.
 ```
 
 States are primarily used to define what TwiML should be displayed to Twilio for
-a given call. Telephonist provides a simple macro to make generating and
-returning `Telephonist.State` structs easy:
+a given call at a particular time. Telephonist provides a simple macro to make 
+generating and returning `Telephonist.State` structs easy:
 
 ```elixir
 defmodule CustomStateMachine do
@@ -231,16 +231,13 @@ progress from there. Existing calls will be looked up in an ETS table managed by
 - `CallProcessor.process/3` spins off a new process to do the actual call
   processing for maximum concurrency.
 - The current state of all ongoing calls is stored in the ETS table managed by
-  the `Telephonist.OngoingCalls` process. See its docs for more details.
+  the `Telephonist.OngoingCall` process. See its docs for more details.
 
 ### Subscribing to Events
 
 Telephonist publishes events via `GenEvent`. In fact, `Telephonist.Logger` is
 simply a subscriber to these events. Look there for an example of how to
 implement your own subscriber.
-
-This would be useful to add your own logging/debugging system, or to add
-side-effects which can't be elegantly expressed in the state machine itself.
 
 ## Other Twilio Libraries
 
