@@ -30,8 +30,8 @@ defmodule Telephonist.State do
     twiml = twiml do: nil
     %__MODULE__{
       name: :complete,
-      machine: state[:machine], 
-      options: state[:options] || %{},
+      machine: state.machine, 
+      options: state.options || %{},
       twiml: twiml
     }
   end
