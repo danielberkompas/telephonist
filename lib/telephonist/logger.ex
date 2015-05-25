@@ -1,13 +1,28 @@
 defmodule Telephonist.Logger do
+  @shortdoc "Logs StateMachine transitions and errors."
+
+  @moduledoc """
+  Logs all the events broadcasted by `Telephonist.Event`, using the `Logger`
+  module. Since it's implemented as a GenEvent subscriber, and listens on all
+  implemented events, its source code is a good place to look if you want to
+  implement your own subscriber.
+
+  See the source of `start_link/0` for more details.
+  """
+
   use GenEvent
   require Logger
 
+  @doc """
+  Start the `Telephonist.Logger` process.
+  """
   def start_link do
     handler = GenEvent.start_link(name: __MODULE__)
     GenEvent.add_handler(Telephonist.Event, Telephonist.Logger, [])
     handler
   end
 
+  @doc false
   def handle_event({:processing, {_, twilio, _} = params}, _state) do
     log twilio[:CallSid], "Processing: #{inspect params}"
   end

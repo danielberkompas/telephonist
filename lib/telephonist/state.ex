@@ -10,6 +10,17 @@ defmodule Telephonist.State do
   - `machine`: the module name of the state machine the state is a part of.
   - `options`: the custom options that were passed to this state.
   - `twiml`: the TwiML representation of the state.
+
+  ## Example
+
+      %Telephonist.State{
+        name: "introduction",
+        machine: IntroductionMachine,
+        options: %{
+          language: "en"
+        },
+        twiml: "<?xml ..."
+      }
   """
 
   @type t :: %__MODULE__{

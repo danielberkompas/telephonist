@@ -6,8 +6,11 @@ defmodule Telephonist.CallProcessor do
   @shortdoc "Process calls using a `Telephonist.StateMachine`"
 
   @moduledoc """
-  `Telephonist.CallProcessor` allows you to progress a call through a
-  `Telephonist.StateMachine`. See `process/3` for more details.
+  Allows you to progress a call through a `Telephonist.StateMachine`. 
+  See `process/3` for more details.
+
+  For more information on how to design a compatible state machine, see the docs
+  on `Telephonist.StateMachine`.
   """
 
   @completed_statuses ["completed", "busy", "failed", "no-answer"]
