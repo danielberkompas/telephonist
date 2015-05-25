@@ -1,6 +1,7 @@
 Telephonist
 ===========
 
+[![Hex Version](http://img.shields.io/hexpm/v/telephonist.svg)](https://hex.pm/packages/telephonist)
 [![Build Status](https://travis-ci.org/danielberkompas/telephonist.svg)](https://travis-ci.org/danielberkompas/telephonist)
 [![Inline docs](http://inch-ci.org/github/danielberkompas/telephonist.svg?branch=master)](http://inch-ci.org/github/danielberkompas/telephonist)
 
