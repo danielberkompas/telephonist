@@ -10,11 +10,11 @@ flows easier to maintain.
 
 ## Installation
 
-Get it from Github by adding it to your `deps` in `mix.exs`: 
+Get it from [Hex](http://hex.pm) by adding it to your `deps` in `mix.exs`: 
 
 ```elixir
 def deps do
-  [{:telephonist, github: "danielberkompas/telephonist"}]
+  [{:telephonist, "~> 0.1.0"}]
 end
 ```
 

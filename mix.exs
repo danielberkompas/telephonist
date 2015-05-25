@@ -8,7 +8,8 @@ defmodule Telephonist.Mixfile do
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
      deps: deps,
-     docs: docs]
+     docs: docs,
+     package: package]
   end
 
   def application do
@@ -30,6 +31,17 @@ defmodule Telephonist.Mixfile do
     [
       readme: "README.md",
       main: Telephonist
+    ]
+  end
+
+  defp package do
+    [
+      files: ["lib", "mix.exs", "README.md", "CHANGELOG.md", "SIGNED.md", "LICENSE"],
+      contributors: ["Daniel Berkompas"],
+      licenses: ["MIT"],
+      links: %{
+        "Github" => "https://github.com/danielberkompas/telephonist"
+      }
     ]
   end
 end
