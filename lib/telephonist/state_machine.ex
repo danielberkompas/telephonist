@@ -202,7 +202,8 @@ defmodule Telephonist.StateMachine do
 
   ## Examples
 
-  Macros from `ExTwiml` can be used in the body of the `state` definition:
+  Macros from [ExTwiml](http://hexdocs.pm/ex_twiml) can be used in the body of
+  the `state` definition:
 
       state :introduction, _twilio, _options do
         say "Welcome!"

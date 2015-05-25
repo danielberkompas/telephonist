@@ -1,7 +1,7 @@
 defmodule Telephonist.OngoingCall do
   use ExActor.GenServer, export: __MODULE__
 
-  @moduledoc """
+  @shortdoc @moduledoc """
   Stores the state of calls that are currently in progress in an ETS table.
   """
 
@@ -18,13 +18,13 @@ defmodule Telephonist.OngoingCall do
     new_state(table)
   end
 
-  @doc "Retrieve the ETS table"
+  @doc "Retrieve the ID of the ETS table."
   @spec table :: integer
   defcall table, state: table do
     reply(table)
   end
 
-  @doc "Find a given call in the ETS table by its SID"
+  @doc "Find a given call in the ETS table by its SID."
   @spec lookup(sid) :: {:ok, call} | error
   defcall lookup(sid), state: table do
     response = case :ets.lookup(table, sid) do
@@ -35,14 +35,14 @@ defmodule Telephonist.OngoingCall do
     reply(response, table)
   end
 
-  @doc "Save a call to the ETS table"
+  @doc "Save a call to the ETS table."
   @spec save(call) :: :ok
   defcast save(call), state: table do
     :ets.insert(table, call)
     noreply
   end
 
-  @doc "Delete a call from the ETS table by its SID"
+  @doc "Delete a call from the ETS table by its SID."
   @spec delete(call | sid) :: :ok
   def delete({sid, _, _}), do: delete(sid)
   defcast delete(sid), state: table do
