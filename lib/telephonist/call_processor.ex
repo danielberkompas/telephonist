@@ -2,6 +2,7 @@ defmodule Telephonist.CallProcessor do
   alias Telephonist.OngoingCall
   import Task, only: [async: 1, await: 1]
   import Telephonist.Event, only: [notify: 2]
+  import Telephonist.Format, only: [atomize_keys: 1]
 
   @shortdoc "Process calls using a `Telephonist.StateMachine`"
 
@@ -42,7 +43,7 @@ defmodule Telephonist.CallProcessor do
   """
   @spec process(atom, map, map) :: Telephonist.State.t
   def process(machine, twilio, options \\ %{}) do
-    twilio = for pair <- twilio, into: %{}, do: atomize_key(pair)
+    twilio = atomize_keys(twilio)
     notify :processing, {machine, twilio, options}
 
     result = async fn ->
@@ -52,9 +53,6 @@ defmodule Telephonist.CallProcessor do
 
     await result
   end
-
-  defp atomize_key({key, val}) when is_atom(key),   do: {key, val}
-  defp atomize_key({key, val}) when is_binary(key), do: {String.to_atom(key), val}
 
   defp lookup(twilio) do
     sid = twilio[:CallSid] |> String.to_atom
