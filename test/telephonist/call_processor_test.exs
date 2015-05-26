@@ -1,5 +1,6 @@
 defmodule Telephonist.CallProcessorTest do
   use ExUnit.Case
+  alias Telephonist.OngoingCall
   alias Telephonist.CallProcessor
 
   defmodule TestMachine do
@@ -36,7 +37,7 @@ defmodule Telephonist.CallProcessorTest do
     end
   end
 
-  test ".process first returns the :introduction state" do
+  test ".process first returns the :introduction state, saves state of call" do
     twilio = %{
       CallSid: "test",
       CallStatus: "in-progress"
@@ -48,6 +49,8 @@ defmodule Telephonist.CallProcessorTest do
     assert state.name         == :introduction
     assert state.options.user == "daniel"
     assert state.twiml        =~ ~r/Hello/
+    assert_saved_state  :test, state
+    assert_saved_status :test, "in-progress"
   end
 
   test ".process returns :complete state if the call has ended and we've never seen it before" do
@@ -61,6 +64,9 @@ defmodule Telephonist.CallProcessorTest do
     assert state.name    == :complete
     assert state.options == %{hello: "world!"}
     assert state.twiml   == "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response></Response>" 
+
+    # Deletes call from OngoingCall lookup table
+    assert {:error, _msg} = OngoingCall.lookup(:CANEVERSEEN)
   end
 
   test ".process can navigate to the :english state" do
@@ -97,4 +103,15 @@ defmodule Telephonist.CallProcessorTest do
     twilio = Map.put(twilio, :Digits, digits)
     CallProcessor.process(TestMachine, twilio)
   end
+
+  defp assert_saved_status(sid, status) do
+    {:ok, {_sid, saved_status, _state}} = OngoingCall.lookup(sid)
+    assert saved_status == status
+  end
+
+  defp assert_saved_state(sid, state) do
+    {:ok, {_sid, _status, saved_state}} = OngoingCall.lookup(sid)
+    assert saved_state == state
+  end
+
 end

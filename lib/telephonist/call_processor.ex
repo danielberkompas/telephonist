@@ -69,11 +69,10 @@ defmodule Telephonist.CallProcessor do
   end
 
   # When the call is complete
-  defp do_processing({sid, _, state} = call, machine, %{CallStatus: status} = twilio, options) when status in @completed_statuses do
+  defp do_processing({sid, _, state} = call, machine, %{CallStatus: status} = twilio, options) 
+  when status in @completed_statuses do
     notify :completed, {sid, machine, twilio, options}
-    state = state || %{}
-    state = Map.put_new(state, :machine, machine)
-    state = Map.put_new(state, :options, options)
+    state = Map.merge %{machine: machine, options: options}, state || %{}
 
     OngoingCall.save(call) # For debugging, garbage collecting
     :ok = state.machine.on_complete(call, twilio, options)
@@ -83,7 +82,7 @@ defmodule Telephonist.CallProcessor do
   end
 
   # When the call is ongoing 
-  defp do_processing({sid, status, _} = call, machine, twilio, options) do
+  defp do_processing({sid, _, _} = call, machine, %{CallStatus: status} = twilio, options) do
     state = get_next_state(call, machine, twilio, options)
 
     call = {sid, status, state}
