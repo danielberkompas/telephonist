@@ -15,7 +15,7 @@ Get it from [Hex](http://hex.pm) by adding it to your `deps` in `mix.exs`:
 
 ```elixir
 def deps do
-  [{:telephonist, "~> 0.1.0"}]
+  [{:telephonist, "~> 0.1.1"}]
 end
 ```
 
