@@ -123,7 +123,7 @@ defmodule Telephonist do
       worker(Telephonist.OngoingCall, []),
       worker(Telephonist.Event, []),
       worker(Telephonist.Logger, []),
-      worker(Immortal.EtsTableManager, [Telephonist.OngoingCall], id: Telephonist.OngoingCallTableWatcher),
+      worker(Immortal.ETSTableManager, [Telephonist.OngoingCall, [:named_table, :protected]])
     ]
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html
