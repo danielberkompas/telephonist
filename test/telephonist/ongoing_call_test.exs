@@ -3,23 +3,14 @@ defmodule Telephonist.OngoingCallTest do
   alias Telephonist.OngoingCall
   doctest Telephonist.OngoingCall
 
-  test "has an ETS table" do
-    table = OngoingCall.table
-    assert is_integer(table), "ETS table was not transfered to OngoingCall"
-  end
-
-  test "its ETS table survives even if it crashes" do
-    original_table = OngoingCall.table
-    restart_manager
-
-    new_table = OngoingCall.table
-    assert is_integer(new_table), "OngoingCall was not repopulated with ETS table after reboot"
-    assert is_list(:ets.info(new_table))
-    assert new_table == original_table, "New OngoingCall table does not match old"
-  end
-
   test ".save can insert a call if its properly formatted" do
     assert :ok == OngoingCall.save({:Sid, "in-progress", %Telephonist.State{}})
+  end
+
+  test ".save cannot insert a call if it's improperly formatted" do
+    assert {:error, _msg} = OngoingCall.save("SID")
+    assert {:error, _msg} = OngoingCall.save({"Sid", nil, nil})
+    assert {:error, _msg} = OngoingCall.save({:sid, nil})
   end
 
   test ".lookup can lookup a call by SID" do
@@ -28,12 +19,17 @@ defmodule Telephonist.OngoingCallTest do
     assert call == {:Sid, "in-progress", %Telephonist.State{}}
   end
 
-  test ".lookup returns {:error, message} if call cannot be found" do
+  test ".lookup returns error if call cannot be found" do
     assert {:error, _msg} = OngoingCall.lookup(:nonexistent)
   end
 
+  test ".lookup returns error if sid is not an atom" do
+    assert {:error, _msg} = OngoingCall.lookup("nonexistent")
+    assert {:error, _msg} = OngoingCall.lookup({"random", "value"})
+  end
+
   test ".delete removes a call from the table" do
-    call = {:DeleteMe, "in-progress", %{}}
+    call = {:DeleteMe, "in-progress", %Telephonist.State{}}
     OngoingCall.save(call)
 
     # Ensure call is in database
@@ -44,13 +40,8 @@ defmodule Telephonist.OngoingCallTest do
     assert {:error, _msg} = OngoingCall.lookup(:DeleteMe)
   end
 
-  ###
-  # Helpers
-  ###
-
-  defp restart_manager do
-    pid = Process.whereis(OngoingCall)
-    Process.exit(pid, :normal)
-    OngoingCall.start_link
+  test ".delete returns error if isn't passed a valid call or SID" do
+    assert {:error, _msg} = OngoingCall.delete("hello")
+    assert {:error, _msg} = OngoingCall.delete({:sid, nil})
   end
 end
