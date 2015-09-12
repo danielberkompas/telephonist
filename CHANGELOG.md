@@ -1,5 +1,13 @@
 # Change Log
 
+## [Unreleased](https://github.com/danielberkompas/telephonist/tree/HEAD)
+
+[Full Changelog](https://github.com/danielberkompas/telephonist/compare/v0.1.1...HEAD)
+
+**Merged pull requests:**
+
+- Process calls in current process [\#4](https://github.com/danielberkompas/telephonist/pull/4) ([danielberkompas](https://github.com/danielberkompas))
+
 ## [v0.1.1](https://github.com/danielberkompas/telephonist/tree/v0.1.1) (2015-08-26)
 [Full Changelog](https://github.com/danielberkompas/telephonist/compare/v0.1.0...v0.1.1)
 
