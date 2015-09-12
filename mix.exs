@@ -20,7 +20,7 @@ defmodule Telephonist.Mixfile do
   defp deps do
     [
       {:immortal, "~> 0.2.0"},
-      {:ex_twiml, "~> 1.1.0"},
+      {:ex_twiml, "~> 2.0"},
       {:inch_ex, only: :docs},
       {:ex_doc, only: :docs}
     ]
