@@ -1,6 +1,5 @@
 defmodule Telephonist.CallProcessor do
   alias Telephonist.OngoingCall
-  import Task, only: [async: 1, await: 1]
   import Telephonist.Event, only: [notify: 2]
   import Telephonist.Format, only: [atomize_keys: 1]
 
@@ -45,13 +44,8 @@ defmodule Telephonist.CallProcessor do
   def process(machine, twilio, options \\ %{}) do
     twilio = atomize_keys(twilio)
     notify :processing, {machine, twilio, options}
-
-    result = async fn ->
-      call = lookup(twilio)
-      do_processing(call, machine, twilio, options)
-    end
-
-    await result
+    call = lookup(twilio)
+    do_processing(call, machine, twilio, options)
   end
 
   defp lookup(twilio) do

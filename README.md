@@ -232,8 +232,6 @@ progress from there. Existing calls will be looked up in an ETS table managed by
 
 #### Under the Hood
 
-- `CallProcessor.process/3` spins off a new process to do the actual call
-  processing for maximum concurrency.
 - The current state of all ongoing calls is stored in the ETS table managed by
   the `Telephonist.OngoingCall` process. See its docs for more details.
 
