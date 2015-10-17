@@ -1,6 +1,5 @@
 defmodule Telephonist.CallProcessorTest do
   use ExUnit.Case
-  alias Telephonist.OngoingCall
   alias Telephonist.CallProcessor
 
   defmodule TestMachine do
@@ -64,9 +63,6 @@ defmodule Telephonist.CallProcessorTest do
     assert state.name    == :complete
     assert state.options == %{hello: "world!"}
     assert state.twiml   == "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response></Response>" 
-
-    # Deletes call from OngoingCall lookup table
-    assert {:error, _msg} = OngoingCall.lookup(:CANEVERSEEN)
   end
 
   test ".process can navigate to the :english state" do
@@ -105,13 +101,17 @@ defmodule Telephonist.CallProcessorTest do
   end
 
   defp assert_saved_status(sid, status) do
-    {:ok, {_sid, saved_status, _state}} = OngoingCall.lookup(sid)
+    {:ok, {_sid, saved_status, _state}} = storage.find(sid)
     assert saved_status == status
   end
 
   defp assert_saved_state(sid, state) do
-    {:ok, {_sid, _status, saved_state}} = OngoingCall.lookup(sid)
+    {:ok, {_sid, _status, saved_state}} = storage.find(sid)
     assert saved_state == state
+  end
+
+  defp storage do
+    Application.get_env(:telephonist, :storage)
   end
 
 end

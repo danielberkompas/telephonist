@@ -1,19 +1,15 @@
-defmodule Telephonist.OngoingCall do
-  use GenServer
-
-  @shortdoc @moduledoc """
-  Stores the state of calls that are currently in progress in an ETS table.
+defmodule Telephonist.Storage.ETS do
+  @moduledoc """
+  Stores the state of calls in an ETS table. In order to use, make sure that you
+  add `#{__MODULE__}` to your application supervisor.
   """
 
-  @type sid    :: atom
-  @type status :: String.t
-  @type call   :: {sid, status, Telephonist.State.t}
-  @type error  :: {:error, String.t}
+  @behaviour Telephonist.Storage
 
-  @doc false
-  def start_link do
-    GenServer.start_link(__MODULE__, [], name: __MODULE__)
-  end
+  # GenServer is only used to start a process to own the ETS table.
+  # All interaction with the ETS table is done directly for maximum
+  # performance.
+  use GenServer
 
   @doc """
   Save the state of an ongoing call.
@@ -27,15 +23,15 @@ defmodule Telephonist.OngoingCall do
 
   ## Examples
 
-      iex> Telephonist.OngoingCall.save({:sid, "in-progress", %Telephonist.State{}})
+      iex> Storage.save({:sid, "in-progress", %Telephonist.State{}})
       :ok
 
-      iex> Telephonist.OngoingCall.save(:invalid)
+      iex> Storage.save(:invalid)
       {:error, "Call must be in format: {sid, status, state}, was :invalid"}
   """
-  @spec save(call) :: :ok | error
   def save({sid, _status, _state} = call) when is_atom(sid) do
-    GenServer.call(__MODULE__, {:save, call})
+    :ets.insert(__MODULE__, call)
+    :ok
   end
   def save(invalid) do
     {:error, "Call must be in format: {sid, status, state}, was #{inspect invalid}"}
@@ -50,15 +46,14 @@ defmodule Telephonist.OngoingCall do
 
   ## Examples
 
-      iex> Telephonist.OngoingCall.save({:sid, "in-progress", %{}})
-      ...> Telephonist.OngoingCall.lookup(:sid)
+      iex> Storage.save({:sid, "in-progress", %{}})
+      ...> Storage.find(:sid)
       {:ok, {:sid, "in-progress", %{}}}
 
-      iex> Telephonist.OngoingCall.lookup(:nonexistent)
+      iex> Storage.find(:nonexistent)
       {:error, "No call with SID :nonexistent is in progress."}
   """
-  @spec lookup(sid) :: {:ok, call} | error
-  def lookup(sid) do
+  def find(sid) do
     case :ets.lookup(__MODULE__, sid) do
       []       -> {:error, "No call with SID #{inspect sid} is in progress."}
       [call|_] -> {:ok, call}
@@ -66,7 +61,7 @@ defmodule Telephonist.OngoingCall do
   end
 
   @doc """
-  Delete a call status from the OngoingCall database.
+  Delete a call status from the Storage.Storage database.
 
   ## Parameters
 
@@ -74,18 +69,18 @@ defmodule Telephonist.OngoingCall do
 
   ## Examples
 
-      iex> Telephonist.OngoingCall.save({:delete, "in-progress", %{}})
-      ...> Telephonist.OngoingCall.delete(:delete)
-      ...> Telephonist.OngoingCall.lookup(:delete)
+      iex> Storage.save({:delete, "in-progress", %{}})
+      ...> Storage.delete(:delete)
+      ...> Storage.find(:delete)
       {:error, "No call with SID :delete is in progress."}
 
-      iex> Telephonist.OngoingCall.delete("invalid")
+      iex> Storage.delete("invalid")
       {:error, "SID must be an atom, was \\"invalid\\""}
   """
-  @spec delete(call | sid) :: :ok | error
   def delete({sid, _, _}), do: delete(sid)
   def delete(sid) when is_atom(sid) do
-    GenServer.call(__MODULE__, {:delete, sid})
+    :ets.delete(__MODULE__, sid)
+    :ok
   end
   def delete(invalid) do
     {:error, "SID must be an atom, was #{inspect invalid}"}
@@ -96,14 +91,13 @@ defmodule Telephonist.OngoingCall do
   ##
 
   @doc false
-  def handle_call({:save, call}, _from, _state) do
-    :ets.insert(__MODULE__, call)
-    {:reply, :ok, nil}
+  def start_link do
+    GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
 
   @doc false
-  def handle_call({:delete, sid}, _from, _state) do
-    :ets.delete(__MODULE__, sid)
-    {:reply, :ok, nil}
+  def init(_) do
+    :ets.new(__MODULE__, [:named_table, :public])
+    {:ok, nil}
   end
 end

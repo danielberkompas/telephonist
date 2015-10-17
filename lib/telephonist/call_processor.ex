@@ -1,5 +1,4 @@
 defmodule Telephonist.CallProcessor do
-  alias Telephonist.OngoingCall
   import Telephonist.Event, only: [notify: 2]
   import Telephonist.Format, only: [atomize_keys: 1]
 
@@ -51,7 +50,7 @@ defmodule Telephonist.CallProcessor do
   defp lookup(twilio) do
     sid = twilio[:CallSid] |> String.to_atom
 
-    case OngoingCall.lookup(sid) do
+    case storage.find(sid) do
       {:ok, call} -> 
         notify :lookup_succeeded, call
         call
@@ -68,9 +67,9 @@ defmodule Telephonist.CallProcessor do
     notify :completed, {sid, machine, twilio, options}
     state = Map.merge %{machine: machine, options: options}, state || %{}
 
-    OngoingCall.save(call) # For debugging, garbage collecting
+    storage.save(call) # For debugging, garbage collecting
     :ok = state.machine.on_complete(call, twilio, options)
-    OngoingCall.delete(call)
+    storage.delete(call)
 
     Telephonist.State.complete(state)
   end
@@ -80,7 +79,7 @@ defmodule Telephonist.CallProcessor do
     state = get_next_state(call, machine, twilio, options)
 
     call = {sid, status, state}
-    OngoingCall.save(call)
+    storage.save(call)
     notify :new_state, call
 
     state
@@ -101,5 +100,9 @@ defmodule Telephonist.CallProcessor do
         notify :transition_failed, {sid, e, state.machine, state.name, twilio, options}
         state.machine.on_transition_error(e, state.name, twilio, options)
     end
+  end
+
+  defp storage do
+    Application.get_env(:telephonist, :storage)
   end
 end

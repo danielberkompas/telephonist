@@ -49,8 +49,8 @@ defmodule Telephonist.Event do
         processed through the system.
 
   - `{:lookup_succeeded, {sid, status, state}}`: Fired when the call could be
-    found in the `Telephonist.OngoingCall` ETS table. The second tuple is the
-    data returned from the ETS table.
+    found in the ongoing storage table. The second tuple is the
+    data returned from storage.
 
       - `sid`: The Twilio SID of the call.
 
