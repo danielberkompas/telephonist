@@ -3,7 +3,7 @@ defmodule Telephonist.Mixfile do
 
   def project do
     [app: :telephonist,
-     version: "0.1.2",
+     version: "1.0.0-pre",
      elixir: "~> 1.0",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
