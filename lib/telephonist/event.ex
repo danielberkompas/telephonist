@@ -89,7 +89,8 @@ defmodule Telephonist.Event do
       - `options`: A map of custom options.
 
 
-  - `{:transition_failed, {sid, exception, state_machine, state_name, twilio, options}}`:
+  - `{:transition_failed, {sid, exception, state_machine, state_name, twilio,
+                           options}}`:
     Fired when a transition couldn't take place, usually due to an exception.
 
       - `sid`: The Twilio SID of the call.

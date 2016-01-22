@@ -20,7 +20,8 @@ defmodule Telephonist.StateMachineTest do
       say "Call"
     end
 
-    def transition(:welcome, %{Digits: digits} = twilio, options) when byte_size(digits) == 3 do
+    def transition(:welcome, %{Digits: digits} = twilio, options)
+    when byte_size(digits) == 3 do
       state(:call, twilio, options)
     end
 

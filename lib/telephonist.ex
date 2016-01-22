@@ -67,7 +67,7 @@ defmodule Telephonist do
         # If neither of the above are true, append an error to the options and
         # remain on the current state
         def transition(:choose_language, twilio, options) do
-          options = Map.put(options, :error, "You pressed an invalid digit. Please try again.")
+          options = Map.put(options, :error, "You pressed an invalid digit.")
           state :choose_language, twilio, options
         end
       end
@@ -80,7 +80,7 @@ defmodule Telephonist do
   Once you've defined a state machine, it's extremely easy to process calls
   using it. 
 
-      new_state = Telephonist.CallProcessor.process(CustomCallFlow, twilio, options)
+      state = Telephonist.CallProcessor.process(CustomCallFlow, twilio, options)
 
   `CustomCallFlow` is the name of the state machine you want to use to
   handle the call, `twilio`, is a map of parameters from Twilio, and `options`
@@ -88,8 +88,8 @@ defmodule Telephonist do
 
   This `process/3` function will perform the following tasks:
 
-  - Look up the call based on the `twilio` params in an internal lookup table, to
-    determine the state that it's currently in.
+  - Look up the call based on the `twilio` params in an internal lookup table,
+    to determine the state that it's currently in.
   
   - Call the `transition/3` handler on the given StateMachine with the current
     state.

@@ -21,7 +21,8 @@ defmodule Telephonist.Mixfile do
     [
       {:ex_twiml, "~> 2.0"},
       {:inch_ex, ">= 0.0.0", only: :docs},
-      {:ex_doc, ">= 0.0.0", only: :docs}
+      {:ex_doc, ">= 0.0.0", only: :docs},
+      {:dogma, ">= 0.0.0", only: [:dev, :test]}
     ]
   end
 
@@ -34,7 +35,8 @@ defmodule Telephonist.Mixfile do
 
   defp package do
     [
-      files: ["lib", "mix.exs", "README.md", "CHANGELOG.md", "SIGNED.md", "LICENSE"],
+      files: ["lib", "mix.exs", "README.md", "CHANGELOG.md",
+              "SIGNED.md", "LICENSE"],
       contributors: ["Daniel Berkompas"],
       licenses: ["MIT"],
       links: %{
