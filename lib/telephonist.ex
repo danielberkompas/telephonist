@@ -104,11 +104,6 @@ defmodule Telephonist do
 
   Telephonist broadcasts events through `Telephonist.Event`. It's possible to 
   implement custom subscribers, exactly how `Telephonist.Logger` is implemented.
-
-  ### Lookup Table
-
-  Telephonist's lookup table is managed by `Telephonist.OngoingCall`. If you
-  need to inspect its contents, see that module's documentation.
   """
 
   use Application
@@ -120,10 +115,9 @@ defmodule Telephonist do
     children = [
       # Define workers and child supervisors to be supervised
       # worker(Telephonist.Worker, [arg1, arg2, arg3])
-      worker(Telephonist.OngoingCall, []),
       worker(Telephonist.Event, []),
       worker(Telephonist.Logger, []),
-      worker(Immortal.ETSTableManager, [Telephonist.OngoingCall, [:named_table, :protected]])
+      worker(Telephonist.Storage.ETS, [])
     ]
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html

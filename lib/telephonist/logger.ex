@@ -1,6 +1,4 @@
 defmodule Telephonist.Logger do
-  @shortdoc "Logs StateMachine transitions and errors."
-
   @moduledoc """
   Logs all the events broadcasted by `Telephonist.Event`, using the `Logger`
   module. Since it's implemented as a GenEvent subscriber, and listens on all

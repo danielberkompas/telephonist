@@ -1,8 +1,4 @@
 defmodule Telephonist.StateMachine do
-  use Behaviour
-
-  @shortdoc "Behaviour and macros for defining state machines"
-
   @moduledoc """
   This module provides a `Behaviour` and macros that make designing a
   Telephonist-compatible state machine much easier. 
@@ -65,13 +61,13 @@ defmodule Telephonist.StateMachine do
 
       use Telephonist.StateMachine, initial_state: :welcome
   """
-  defcallback initial_state :: state_name
+  @callback initial_state :: state_name
 
   @doc """
   Defines a particular state in your state machine. Can be defined easily using
   the `state/3` macro.
   """
-  defcallback state(state_name, twilio, options) :: Telephonist.State.t
+  @callback state(state_name, twilio, options) :: Telephonist.State.t
 
   @doc """
   Defines a transition from a given state to a new state. This callback will be
@@ -142,14 +138,14 @@ defmodule Telephonist.StateMachine do
 
   See `on_transition_error/4` for more details on how to do this.
   """
-  defcallback transition(state_name, twilio, options) :: Telephonist.State.t
+  @callback transition(state_name, twilio, options) :: Telephonist.State.t
 
   @doc """
   This callback is run when Twilio reports that the call has completed. It's a
   good place to put any cleanup logic or final logging that you want to perform
   when a call finishes.
   """
-  defcallback on_complete(call, twilio, options) :: :ok
+  @callback on_complete(call, twilio, options) :: :ok
 
   @doc """
   Whenever a call fails to transition due to an exception, this 
@@ -159,7 +155,7 @@ defmodule Telephonist.StateMachine do
   It should return a new state. If you `use Telephonist.StateMachine`, the
   default implementation will simply re-raise the exception.
   """
-  defcallback on_transition_error(map, state_name, twilio, options)
+  @callback on_transition_error(map, state_name, twilio, options) :: :ok
 
   ###
   # Macros

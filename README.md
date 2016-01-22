@@ -227,13 +227,7 @@ end
 ```
 
 That's it! New calls will start off in `MyStateMachine.initial_state` and
-progress from there. Existing calls will be looked up in an ETS table managed by
-`Telephonist.OngoingCall` and will progress from where they left off.
-
-#### Under the Hood
-
-- The current state of all ongoing calls is stored in the ETS table managed by
-  the `Telephonist.OngoingCall` process. See its docs for more details.
+progress from there. 
 
 ### Subscribing to Events
 
