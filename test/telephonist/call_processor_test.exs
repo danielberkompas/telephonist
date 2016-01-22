@@ -52,7 +52,7 @@ defmodule Telephonist.CallProcessorTest do
     assert_saved_status :test, "in-progress"
   end
 
-  test ".process returns :complete state if the call has ended and we've never seen it before" do
+  test ".process returns :complete state if the call has ended" do
     twilio = %{
       CallSid: "CANEVERSEEN",
       CallStatus: "failed"
@@ -62,7 +62,8 @@ defmodule Telephonist.CallProcessorTest do
     assert state.machine == TestMachine
     assert state.name    == :complete
     assert state.options == %{hello: "world!"}
-    assert state.twiml   == "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response></Response>" 
+    assert state.twiml ==
+      ~S{<?xml version="1.0" encoding="UTF-8"?><Response></Response>}
   end
 
   test ".process can navigate to the :english state" do
@@ -77,7 +78,7 @@ defmodule Telephonist.CallProcessorTest do
     assert state.twiml =~ ~r/Espanol/
   end
 
-  test ".process can recover from transition errors using .on_transition_error" do
+  test ".process can recover from transition errors" do
     state = navigate("CASECRET", "3")
     assert state.name == :secret
   end
@@ -113,5 +114,4 @@ defmodule Telephonist.CallProcessorTest do
   defp storage do
     Application.get_env(:telephonist, :storage)
   end
-
 end

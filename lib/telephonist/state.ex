@@ -41,7 +41,7 @@ defmodule Telephonist.State do
     twiml = twiml do: nil
     %__MODULE__{
       name: :complete,
-      machine: state.machine, 
+      machine: state.machine,
       options: state.options || %{},
       twiml: twiml
     }
@@ -50,6 +50,9 @@ end
 
 defimpl Inspect, for: Telephonist.State do
   def inspect(state, _opts) do
-    "#Telephonist.State<#{state.machine}, #{inspect state.name}, #{inspect state.options}, #{inspect state.twiml}>"
+    data =
+      [state.machine, state.name, state.options state.twiml]
+      |> Enum.join(", ")
+    "#Telephonist.State<#{data}>"
   end
 end

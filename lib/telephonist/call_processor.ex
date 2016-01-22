@@ -1,6 +1,6 @@
 defmodule Telephonist.CallProcessor do
   @moduledoc """
-  Allows you to progress a call through a `Telephonist.StateMachine`. 
+  Allows you to progress a call through a `Telephonist.StateMachine`.
   See `process/3` for more details.
 
   For more information on how to design a compatible state machine, see the docs
@@ -17,7 +17,7 @@ defmodule Telephonist.CallProcessor do
   `Telephonist.State` for the call. This state includes the correct TwiML for
   the current state of the call, so that you can render it back to Twilio.
 
-  ### Parameters 
+  ### Parameters
 
     - `machine`: The `Telephonist.StateMachine` to use. This is used as a
       starting point if the call has not been seen before.
@@ -53,10 +53,10 @@ defmodule Telephonist.CallProcessor do
     sid = twilio[:CallSid] |> String.to_atom
 
     case storage.find(sid) do
-      {:ok, call} -> 
+      {:ok, call} ->
         notify :lookup_succeeded, call
         call
-      {:error, _} -> 
+      {:error, _} ->
         call = {sid, twilio[:CallStatus], nil}
         notify :lookup_failed, call
         call
@@ -64,7 +64,8 @@ defmodule Telephonist.CallProcessor do
   end
 
   # When the call is complete
-  defp do_processing({sid, _, state} = call, machine, %{CallStatus: status} = twilio, options) 
+  defp do_processing({sid, _, state} = call, machine,
+                     %{CallStatus: status} = twilio, options)
   when status in @completed_statuses do
     notify :completed, {sid, machine, twilio, options}
     state = Map.merge %{machine: machine, options: options}, state || %{}
@@ -76,8 +77,9 @@ defmodule Telephonist.CallProcessor do
     Telephonist.State.complete(state)
   end
 
-  # When the call is ongoing 
-  defp do_processing({sid, _, _} = call, machine, %{CallStatus: status} = twilio, options) do
+  # When the call is ongoing
+  defp do_processing({sid, _, _} = call, machine,
+                     %{CallStatus: status} = twilio, options) do
     state = get_next_state(call, machine, twilio, options)
 
     call = {sid, status, state}
@@ -99,7 +101,8 @@ defmodule Telephonist.CallProcessor do
       state.machine.transition(state.name, twilio, options)
     rescue
       e ->
-        notify :transition_failed, {sid, e, state.machine, state.name, twilio, options}
+        notify :transition_failed, {sid, e, state.machine, state.name,
+                                    twilio, options}
         state.machine.on_transition_error(e, state.name, twilio, options)
     end
   end

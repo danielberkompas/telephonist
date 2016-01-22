@@ -1,7 +1,7 @@
 defmodule Telephonist.StateMachine do
   @moduledoc """
   This module provides a `Behaviour` and macros that make designing a
-  Telephonist-compatible state machine much easier. 
+  Telephonist-compatible state machine much easier.
 
   ## Usage
 
@@ -14,7 +14,7 @@ defmodule Telephonist.StateMachine do
       end
 
   Use the `__using__` macro. This will set the `@behaviour` attribute, and
-  provide default implementations for `initial_state/0` and 
+  provide default implementations for `initial_state/0` and
   `on_transition_error/3`, as well as macros for constructing states:
 
       defmodule MyStateMachine do
@@ -26,11 +26,11 @@ defmodule Telephonist.StateMachine do
       end
 
   ### Callbacks
-  
+
   A complete `Telephonist.StateMachine` must implement the following callbacks:
 
   - `initial_state/0`
-  - `state/3` 
+  - `state/3`
   - `transition/3`
   - `on_complete/3`
   - `on_transition_error/4`
@@ -112,7 +112,8 @@ defmodule Telephonist.StateMachine do
               options = Map.put(options, :extension, extension)
               state(:extension, twilio, options)
             _ ->
-              options = Map.put(options, :error, "Sorry, we could not find that extension code. Please try again!")
+              error = "Sorry, we could not find that extension code. Try again?"
+              options = Map.put(options, :error, error)
               state(:introduction, twilio, options)
           end
         end
@@ -186,7 +187,7 @@ defmodule Telephonist.StateMachine do
   end
 
   defmacro __using__(_) do
-    raise ArgumentError, "You must provide an initial state for the StateMachine."
+    raise ArgumentError, "You must define an initial state."
   end
 
   @doc """
@@ -213,7 +214,8 @@ defmodule Telephonist.StateMachine do
 
   You can also add guards:
 
-      state :introduction, _twilio, %{error: code} when code in [:catastrophic, :terrible] do
+      state :introduction, _twilio, %{error: code}
+      when code in [:catastrophic, :terrible] do
         say "The death toll is catastrophic!"
       end
 
@@ -240,7 +242,8 @@ defmodule Telephonist.StateMachine do
     {options, guards} = extract_options_and_guards(options)
 
     quote do
-      def state(unquote(name), unquote(twilio), unquote(options) = options) when unquote(guards) do
+      def state(unquote(name), unquote(twilio), unquote(options) = options)
+      when unquote(guards) do
         xml = twiml do
           unquote(block)
         end
@@ -255,6 +258,8 @@ defmodule Telephonist.StateMachine do
     end
   end
 
-  defp extract_options_and_guards({:when, _, [options, guards]}), do: {options, guards}
+  defp extract_options_and_guards({:when, _, [options, guards]}) do
+    {options, guards}
+  end
   defp extract_options_and_guards(options), do: {options, true}
 end

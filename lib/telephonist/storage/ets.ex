@@ -17,9 +17,9 @@ defmodule Telephonist.Storage.ETS do
   ## Parameters
 
   - `call`: A tuple in the format `{sid, status, state}` where:
-      - `sid` is an atom representing the Twilio call SID.
-      - `status` is a binary representing the Twilio status. (e.g., "in-progress")
-      - `state` is a `Telephonist.State`.
+      - `sid`: an atom representing the Twilio call SID.
+      - `status`: a binary representing the Twilio status. (e.g., "in-progress")
+      - `state`: a `Telephonist.State`.
 
   ## Examples
 
@@ -34,7 +34,8 @@ defmodule Telephonist.Storage.ETS do
     :ok
   end
   def save(invalid) do
-    {:error, "Call must be in format: {sid, status, state}, was #{inspect invalid}"}
+    msg = "Call must be in format: {sid, status, state}, was #{inspect invalid}"
+    {:error, msg}
   end
 
   @doc """

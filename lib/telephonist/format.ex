@@ -8,8 +8,8 @@ defmodule Telephonist.Format do
 
   ## Example
 
-      iex> Telephonist.Format.atomize_keys(%{"hello" => %{"there" => "everyone"}})
-      %{:hello => %{:there => "everyone"}}
+      iex> Telephonist.Format.atomize_keys(%{"hello" => %{"there" => "world"}})
+      %{:hello => %{:there => "world"}}
   """
   def atomize_keys(map) when is_map(map) do
     for {key, val} <- map, into: %{}, do: {atomize(key), atomize_keys(val)}

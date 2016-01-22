@@ -35,15 +35,21 @@ defmodule Telephonist.Logger do
   end
 
   def handle_event({:completed, {sid, _machine, twilio, options}}, _state) do
-    log sid, "Call completed. Twilio: #{inspect twilio} Options: #{inspect options}"
+    log sid, "Call completed. Twilio: #{twilio} Options: #{options}"
   end
 
-  def handle_event({:transition, {sid, _state_machine, state_name, twilio, options}}, _state) do
-    log sid, "Calling transition(#{inspect state_name}, #{inspect twilio}, #{inspect options})"
+  def handle_event({:transition, {sid, _state_machine, state_name, twilio,
+                                  options}}, _state) do
+    log sid, "Calling transition(#{state_name}, #{twilio}, #{options})"
   end
 
-  def handle_event({:transition_failed, {sid, exception, _state_machine, state_name, twilio, options}}, _state) do
-    log sid, "Transition failed! Calling on_transition_error(#{inspect exception}, #{inspect state_name}, #{inspect twilio}, #{inspect options})"
+  def handle_event({:transition_failed,
+                    {sid, exception, _state_machine, state_name,
+                     twilio, options}}, _state) do
+    args =
+      [exception, state_name, twilio, options]
+      |> Enum.join(", ")
+    log sid, "Transition failed! Calling on_transition_error(#{args})"
   end
 
   def handle_event({:new_state, {sid, _status, state}}, _state) do
