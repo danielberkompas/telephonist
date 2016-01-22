@@ -1,9 +1,4 @@
 defmodule Telephonist.CallProcessor do
-  import Telephonist.Event, only: [notify: 2]
-  import Telephonist.Format, only: [atomize_keys: 1]
-
-  @shortdoc "Process calls using a `Telephonist.StateMachine`"
-
   @moduledoc """
   Allows you to progress a call through a `Telephonist.StateMachine`. 
   See `process/3` for more details.
@@ -11,6 +6,9 @@ defmodule Telephonist.CallProcessor do
   For more information on how to design a compatible state machine, see the docs
   on `Telephonist.StateMachine`.
   """
+
+  import Telephonist.Event, only: [notify: 2]
+  import Telephonist.Format, only: [atomize_keys: 1]
 
   @completed_statuses ["completed", "busy", "failed", "no-answer"]
 
@@ -43,11 +41,15 @@ defmodule Telephonist.CallProcessor do
   def process(machine, twilio, options \\ %{}) do
     twilio = atomize_keys(twilio)
     notify :processing, {machine, twilio, options}
-    call = lookup(twilio)
+    call = find(twilio)
     do_processing(call, machine, twilio, options)
   end
 
-  defp lookup(twilio) do
+  ###
+  # Private API
+  ###
+
+  defp find(twilio) do
     sid = twilio[:CallSid] |> String.to_atom
 
     case storage.find(sid) do

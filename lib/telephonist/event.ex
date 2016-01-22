@@ -1,6 +1,4 @@
 defmodule Telephonist.Event do
-  @shortdoc "Simple GenEvent broadcaster for Telephonist events."
-
   @moduledoc """
   This module publishes any events that Telephonist broadcasts. These events
   include things like state transitions and errors. See `Telephonist.Logger`
