@@ -71,14 +71,14 @@ defmodule Telephonist.CallProcessor do
     state = Map.merge %{machine: machine, options: options}, state || %{}
 
     storage.save(call) # For debugging, garbage collecting
-    :ok = state.machine.on_complete(call, twilio, options)
+    :ok = state.machine.on_complete(call, twilio, state.options)
     storage.delete(call)
 
     Telephonist.State.complete(state)
   end
 
   # When the call is ongoing
-  defp do_processing({sid, _, _} = call, machine,
+  defp do_processing({sid, _, state} = call, machine,
                      %{CallStatus: status} = twilio, options) do
     state = get_next_state(call, machine, twilio, options)
 
@@ -98,6 +98,7 @@ defmodule Telephonist.CallProcessor do
   defp get_next_state({sid, _, state}, _, twilio, options) do
     try do
       notify :transition, {sid, state.machine, state.name, twilio, options}
+      options = Map.merge(options, state.options)
       state.machine.transition(state.name, twilio, options)
     rescue
       e ->
