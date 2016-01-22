@@ -9,6 +9,7 @@ defmodule Telephonist.Logger do
   """
 
   use GenEvent
+
   require Logger
 
   @doc """
