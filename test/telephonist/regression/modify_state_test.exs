@@ -29,15 +29,15 @@ defmodule Telephonist.Regression.ModifyStateTest do
       say "Your ETA is confirmed to be #{job.eta.confirmed} minutes"
     end
 
-    def transition(:prompt, %{"Digits" => minutes} = twilio, meta) do
-      meta = Map.put(meta, :eta, %{unconfirmed: minutes})
-      state :confirmation, twilio, meta
+    def transition(:prompt, %{"Digits" => minutes} = twilio, data) do
+      data = Map.put(data, :eta, %{unconfirmed: minutes})
+      state :confirmation, twilio, data
     end
 
-    def transition(:confirmation, %{"Digits" => "1"} = twilio, meta) do
-      minutes = meta.eta.unconfirmed
-      meta = %{meta | eta: %{confirmed: minutes}}
-      state :confirmed, twilio, meta
+    def transition(:confirmation, %{"Digits" => "1"} = twilio, data) do
+      minutes = data.eta.unconfirmed
+      data = %{data | eta: %{confirmed: minutes}}
+      state :confirmed, twilio, data
     end
 
     def on_complete(_, _, _), do: :ok

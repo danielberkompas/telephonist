@@ -24,9 +24,11 @@ defmodule Telephonist.CallProcessor do
     - `twilio`: A `map` of all the Twilio request parameters that were given for
       the call. This will be forwarded to the StateMachine.
 
-    - `options`: An optional `map` of custom options that you want to pass along
+    - `data`: An optional `map` of custom data that you want to pass along
       to the StateMachine. For example, this could include information like user
-      data, or URLs to use for call redirection or recording handling.
+      data, or URLs to use for call redirection or recording handling. It will
+      be saved in that call's state for the remainder of its lifecycle, and
+      passed into each StateMachine `transition` handler function.
 
   ## Examples
 
@@ -37,10 +39,10 @@ defmodule Telephonist.CallProcessor do
       end
   """
   @spec process(atom, map, map) :: Telephonist.State.t
-  def process(machine, twilio, options \\ %{}) do
-    notify :processing, {machine, twilio, options}
+  def process(machine, twilio, data \\ %{}) do
+    notify :processing, {machine, twilio, data}
     call = find(twilio)
-    do_processing(call, machine, twilio, options)
+    do_processing(call, machine, twilio, data)
   end
 
   ###
@@ -63,13 +65,13 @@ defmodule Telephonist.CallProcessor do
 
   # When the call is complete
   defp do_processing({sid, _, state} = call, machine,
-                     %{"CallStatus" => status} = twilio, options)
+                     %{"CallStatus" => status} = twilio, data)
   when status in @completed_statuses do
-    notify :completed, {sid, machine, twilio, options}
-    state = Map.merge %{machine: machine, options: options}, state || %{}
+    notify :completed, {sid, machine, twilio, data}
+    state = Map.merge %{machine: machine, data: data}, state || %{}
 
     storage.save(call) # For debugging, garbage collecting
-    :ok = state.machine.on_complete(call, twilio, state.options)
+    :ok = state.machine.on_complete(call, twilio, state.data)
     storage.delete(call)
 
     Telephonist.State.complete(state)
@@ -77,8 +79,8 @@ defmodule Telephonist.CallProcessor do
 
   # When the call is ongoing
   defp do_processing({sid, _, _} = call, machine,
-                     %{"CallStatus" => status} = twilio, options) do
-    state = get_next_state(call, machine, twilio, options)
+                     %{"CallStatus" => status} = twilio, data) do
+    state = get_next_state(call, machine, twilio, data)
 
     call = {sid, status, state}
     storage.save(call)
@@ -88,21 +90,21 @@ defmodule Telephonist.CallProcessor do
   end
 
   # When the call hasn't been tracked yet
-  defp get_next_state({_, _, nil}, machine, twilio, options) do
-    machine.state(machine.initial_state, twilio, options)
+  defp get_next_state({_, _, nil}, machine, twilio, data) do
+    machine.state(machine.initial_state, twilio, data)
   end
 
   # When the call has been tracked already
-  defp get_next_state({sid, _, state}, _, twilio, options) do
+  defp get_next_state({sid, _, state}, _, twilio, data) do
     try do
-      notify :transition, {sid, state.machine, state.name, twilio, options}
-      options = Map.merge(options, state.options)
-      state.machine.transition(state.name, twilio, options)
+      notify :transition, {sid, state.machine, state.name, twilio, data}
+      data = Map.merge(data, state.data)
+      state.machine.transition(state.name, twilio, data)
     rescue
       e ->
         notify :transition_failed, {sid, e, state.machine, state.name,
-                                    twilio, options}
-        state.machine.on_transition_error(e, state.name, twilio, options)
+                                    twilio, data}
+        state.machine.on_transition_error(e, state.name, twilio, data)
     end
   end
 

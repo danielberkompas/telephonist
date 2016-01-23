@@ -12,7 +12,7 @@ defmodule Telephonist.StateMachineTest do
       say "Terrible"
     end
 
-    state :welcome, _twilio, _options do
+    state :welcome, _twilio, _data do
       say "Welcome"
     end
 
@@ -20,14 +20,14 @@ defmodule Telephonist.StateMachineTest do
       say "Call"
     end
 
-    def transition(:welcome, %{Digits: digits} = twilio, options)
+    def transition(:welcome, %{Digits: digits} = twilio, data)
     when byte_size(digits) == 3 do
-      state(:call, twilio, options)
+      state(:call, twilio, data)
     end
 
-    def transition(:welcome, twilio, options) do
-      options = Map.put(options, :error, :terrible)
-      state(:welcome, twilio, options)
+    def transition(:welcome, twilio, data) do
+      data = Map.put(data, :error, :terrible)
+      state(:welcome, twilio, data)
     end
 
     def on_complete(_, _, _), do: :ok
@@ -40,7 +40,7 @@ defmodule Telephonist.StateMachineTest do
   test ":welcome state says 'Welcome' if there are no errors" do
     state = TestMachine.state(:welcome, %{}, %{option: "val"})
     assert state.twiml =~ ~r/Welcome/
-    assert %{option: "val"} = state.options
+    assert %{option: "val"} = state.data
   end
 
   test ":welcome can differentiate between different types of errors" do
@@ -62,6 +62,6 @@ defmodule Telephonist.StateMachineTest do
   test "transition to :welcome with an error if less than three digits" do
     state = TestMachine.transition(:welcome, %{Digits: "12"}, %{})
     assert state.name == :welcome
-    assert %{error: _msg} = state.options
+    assert %{error: _msg} = state.data
   end
 end

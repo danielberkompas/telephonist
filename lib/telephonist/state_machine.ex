@@ -20,7 +20,7 @@ defmodule Telephonist.StateMachine do
       defmodule MyStateMachine do
         uses Telephonist.StateMachine, initial_state: :introduction
 
-        state :introduction, twilio, options do
+        state :introduction, twilio, data do
           say "Welcome to my state machine!"
         end
       end
@@ -40,7 +40,7 @@ defmodule Telephonist.StateMachine do
   @type machine    :: atom
   @type state_name :: atom
   @type twilio     :: map
-  @type options    :: map
+  @type data       :: map
   @type next_state :: state_name | {machine, state_name}
 
   ###
@@ -67,7 +67,7 @@ defmodule Telephonist.StateMachine do
   Defines a particular state in your state machine. Can be defined easily using
   the `state/3` macro.
   """
-  @callback state(state_name, twilio, options) :: Telephonist.State.t
+  @callback state(state_name, twilio, data) :: Telephonist.State.t
 
   @doc """
   Defines a transition from a given state to a new state. This callback will be
@@ -91,7 +91,7 @@ defmodule Telephonist.StateMachine do
           end
         end
 
-        state :introduction, _twilio, _options do
+        state :introduction, _twilio, _data do
           gather finish_on_key: "#" do
             say \"\"\"
             Welcome to Company, Inc!
@@ -106,15 +106,15 @@ defmodule Telephonist.StateMachine do
           dial extension.number
         end
 
-        def transition(:introduction, %{Digits: ext_code} = twilio, options) do
+        def transition(:introduction, %{"Digits" => ext_code} = twilio, data) do
           case find_extension(ext_code) do # a database check?
             {:ok, extension} ->
-              options = Map.put(options, :extension, extension)
-              state(:extension, twilio, options)
+              data = Map.put(data, :extension, extension)
+              state(:extension, twilio, data)
             _ ->
               error = "Sorry, we could not find that extension code. Try again?"
-              options = Map.put(options, :error, error)
-              state(:introduction, twilio, options)
+              data = Map.put(data, :error, error)
+              state(:introduction, twilio, data)
           end
         end
       end
@@ -123,10 +123,10 @@ defmodule Telephonist.StateMachine do
   entered by the user are a valid extension code by looking them up in a
   database.
 
-  If the extension is found, it appends it to the `options`, and passes it to
+  If the extension is found, it appends it to the `data`, and passes it to
   the `state/3` function for `:extension`.
 
-  If the extension is not found, it appends an `:error` to the `options`, and
+  If the extension is not found, it appends an `:error` to the `data`, and
   returns the `:introduction` state. The pattern matching on `:introduction`
   notices that there is an `:error`, and runs the appropriate version of the
   `:introduction` state. The user can then try again.
@@ -139,24 +139,24 @@ defmodule Telephonist.StateMachine do
 
   See `on_transition_error/4` for more details on how to do this.
   """
-  @callback transition(state_name, twilio, options) :: Telephonist.State.t
+  @callback transition(state_name, twilio, data) :: Telephonist.State.t
 
   @doc """
   This callback is run when Twilio reports that the call has completed. It's a
   good place to put any cleanup logic or final logging that you want to perform
   when a call finishes.
   """
-  @callback on_complete(call, twilio, options) :: :ok
+  @callback on_complete(call, twilio, data) :: :ok
 
   @doc """
-  Whenever a call fails to transition due to an exception, this 
-  `on_transition_error` handler will be run, and will be given the error that 
+  Whenever a call fails to transition due to an exception, this
+  `on_transition_error` handler will be run, and will be given the error that
   occurred as its first argument.
 
   It should return a new state. If you `use Telephonist.StateMachine`, the
   default implementation will simply re-raise the exception.
   """
-  @callback on_transition_error(map, state_name, twilio, options) :: :ok
+  @callback on_transition_error(map, state_name, twilio, data) :: :ok
 
   ###
   # Macros
@@ -178,7 +178,9 @@ defmodule Telephonist.StateMachine do
     quote do
       import Telephonist.StateMachine
       import ExTwiml
+
       @behaviour Telephonist.StateMachine
+
       def initial_state, do: unquote(initial_state)
       def on_transition_error(exception, _, _, _), do: raise exception
 
@@ -195,18 +197,18 @@ defmodule Telephonist.StateMachine do
 
   - `name`: the name of the state.
   - `twilio`: a map of Twilio request parameters.
-  - `options`: the custom options provided for this state.
+  - `data`: the custom data provided for this state.
 
   ## Examples
 
   Macros from [ExTwiml](http://hexdocs.pm/ex_twiml) can be used in the body of
   the `state` definition:
 
-      state :introduction, _twilio, _options do
+      state :introduction, _twilio, _data do
         say "Welcome!"
       end
 
-  You can pattern match on the `twilio` and `options` parameters:
+  You can pattern match on the `twilio` and `data` parameters:
 
       state :introduction, _twilio, %{error: message} do
         say "An error occurred!" <> message
@@ -223,7 +225,7 @@ defmodule Telephonist.StateMachine do
 
   The `state` macro just defines a simple function in this format:
 
-      def state(name, twilio, options) do
+      def state(name, twilio, data) do
         xml = twiml do
           # body evaluated here
         end
@@ -234,15 +236,15 @@ defmodule Telephonist.StateMachine do
   If you prefer to define your states manually like this, just follow this
   pattern and everything should work fine.
   """
-  defmacro state(name, twilio, options, block) do
-    compile(name, twilio, options, block)
+  defmacro state(name, twilio, data, block) do
+    compile(name, twilio, data, block)
   end
 
-  defp compile(name, twilio, options, do: block) do
-    {options, guards} = extract_options_and_guards(options)
+  defp compile(name, twilio, data, do: block) do
+    {data, guards} = extract_data_and_guards(data)
 
     quote do
-      def state(unquote(name), unquote(twilio), unquote(options) = options)
+      def state(unquote(name), unquote(twilio), unquote(data) = data)
       when unquote(guards) do
         xml = twiml do
           unquote(block)
@@ -251,15 +253,15 @@ defmodule Telephonist.StateMachine do
         %Telephonist.State{
           name: unquote(name),
           machine: __MODULE__,
-          options: options,
+          data: data,
           twiml: xml
         }
       end
     end
   end
 
-  defp extract_options_and_guards({:when, _, [options, guards]}) do
-    {options, guards}
+  defp extract_data_and_guards({:when, _, [data, guards]}) do
+    {data, guards}
   end
-  defp extract_options_and_guards(options), do: {options, true}
+  defp extract_data_and_guards(data), do: {data, true}
 end

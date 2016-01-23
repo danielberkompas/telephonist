@@ -1,6 +1,4 @@
 defmodule Telephonist.State do
-  import ExTwiml
-
   @moduledoc """
   `#{__MODULE__}` represents a given state for an ongoing phone call.
 
@@ -8,7 +6,8 @@ defmodule Telephonist.State do
 
   - `name`: the name of the state.
   - `machine`: the module name of the state machine the state is a part of.
-  - `options`: the custom options that were passed to this state.
+  - `data`: any custom data about the call that you want to store between
+    Twilio requests.
   - `twiml`: the TwiML representation of the state.
 
   ## Example
@@ -16,23 +15,25 @@ defmodule Telephonist.State do
       %Telephonist.State{
         name: "introduction",
         machine: IntroductionMachine,
-        options: %{
+        data: %{
           language: "en"
         },
         twiml: "<?xml ..."
       }
   """
 
+  import ExTwiml
+
   @type t :: %__MODULE__{
                name: atom,
                machine: atom,
-               options: map,
+               data: map,
                twiml: String.t
              }
 
   defstruct name: nil,
             machine: nil,
-            options: %{},
+            data: %{},
             twiml: nil
 
   @doc "Returns a 'complete' state, with data from a given state"
@@ -42,7 +43,7 @@ defmodule Telephonist.State do
     %__MODULE__{
       name: :complete,
       machine: state.machine,
-      options: state.options || %{},
+      data: state.data || %{},
       twiml: twiml
     }
   end
@@ -51,7 +52,7 @@ end
 defimpl Inspect, for: Telephonist.State do
   def inspect(state, _opts) do
     data =
-      [state.machine, state.name, state.options state.twiml]
+      [state.machine, state.name, state.data, state.twiml]
       |> Enum.join(", ")
     "#Telephonist.State<#{data}>"
   end

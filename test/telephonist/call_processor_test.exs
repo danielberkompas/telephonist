@@ -6,34 +6,34 @@ defmodule Telephonist.CallProcessorTest do
   defmodule TestMachine do
     use Telephonist.StateMachine, initial_state: :introduction
 
-    state :introduction, _twilio, _options do
+    state :introduction, _twilio, _data do
       say "Hello there!"
     end
 
-    state :english, _twilio, _options do
+    state :english, _twilio, _data do
       say "I speak English!"
     end
 
-    state :spanish, _twilio, _options do
+    state :spanish, _twilio, _data do
       say "I speak Espanol!"
     end
 
-    state :secret, _twilio, _options do
+    state :secret, _twilio, _data do
       say "Secret!"
     end
 
-    def transition(:introduction, %{"Digits" => "1"} = twilio, options) do
-      state(:english, twilio, options)
+    def transition(:introduction, %{"Digits" => "1"} = twilio, data) do
+      state(:english, twilio, data)
     end
 
-    def transition(:introduction, %{"Digits" => "2"} = twilio, options) do
-      state(:spanish, twilio, options)
+    def transition(:introduction, %{"Digits" => "2"} = twilio, data) do
+      state(:spanish, twilio, data)
     end
 
     def on_complete(_, _, _), do: :ok
 
-    def on_transition_error(_, _, twilio, options) do
-      state(:secret, twilio, options)
+    def on_transition_error(_, _, twilio, data) do
+      state(:secret, twilio, data)
     end
   end
 
@@ -47,7 +47,7 @@ defmodule Telephonist.CallProcessorTest do
 
     assert state.machine      == TestMachine
     assert state.name         == :introduction
-    assert state.options.user == "daniel"
+    assert state.data.user == "daniel"
     assert state.twiml        =~ ~r/Hello/
     assert_saved_state  "test", state
     assert_saved_status "test", "in-progress"
@@ -62,7 +62,7 @@ defmodule Telephonist.CallProcessorTest do
     state = CallProcessor.process(TestMachine, twilio, %{hello: "world!"})
     assert state.machine == TestMachine
     assert state.name    == :complete
-    assert state.options == %{hello: "world!"}
+    assert state.data == %{hello: "world!"}
     assert state.twiml ==
       ~S{<?xml version="1.0" encoding="UTF-8"?><Response></Response>}
   end
