@@ -4,7 +4,7 @@ defmodule Telephonist.Storage do
   be persisted in any kind of backend that implements the behaviour.
   """
 
-  @type sid    :: atom
+  @type sid    :: String.t
   @type status :: String.t
   @type call   :: {sid, status, Telephonist.State.t}
   @type error  :: {:error, String.t}

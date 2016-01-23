@@ -1,5 +1,6 @@
 defmodule Telephonist.CallProcessorTest do
   use ExUnit.Case
+
   alias Telephonist.CallProcessor
 
   defmodule TestMachine do
@@ -21,11 +22,11 @@ defmodule Telephonist.CallProcessorTest do
       say "Secret!"
     end
 
-    def transition(:introduction, %{Digits: "1"} = twilio, options) do
+    def transition(:introduction, %{"Digits" => "1"} = twilio, options) do
       state(:english, twilio, options)
     end
 
-    def transition(:introduction, %{Digits: "2"} = twilio, options) do
+    def transition(:introduction, %{"Digits" => "2"} = twilio, options) do
       state(:spanish, twilio, options)
     end
 
@@ -38,8 +39,8 @@ defmodule Telephonist.CallProcessorTest do
 
   test ".process first returns the :introduction state, saves state of call" do
     twilio = %{
-      CallSid: "test",
-      CallStatus: "in-progress"
+      "CallSid" => "test",
+      "CallStatus" => "in-progress"
     }
 
     state = CallProcessor.process(TestMachine, twilio, %{user: "daniel"})
@@ -48,14 +49,14 @@ defmodule Telephonist.CallProcessorTest do
     assert state.name         == :introduction
     assert state.options.user == "daniel"
     assert state.twiml        =~ ~r/Hello/
-    assert_saved_state  :test, state
-    assert_saved_status :test, "in-progress"
+    assert_saved_state  "test", state
+    assert_saved_status "test", "in-progress"
   end
 
   test ".process returns :complete state if the call has ended" do
     twilio = %{
-      CallSid: "CANEVERSEEN",
-      CallStatus: "failed"
+      "CallSid" => "CANEVERSEEN",
+      "CallStatus" => "failed"
     }
 
     state = CallProcessor.process(TestMachine, twilio, %{hello: "world!"})
@@ -89,15 +90,15 @@ defmodule Telephonist.CallProcessorTest do
 
   defp navigate(sid, digits) do
     twilio = %{
-      CallSid: sid,
-      CallStatus: "in-progress"
+      "CallSid" => sid,
+      "CallStatus" => "in-progress"
     }
 
     # set up initial state
     CallProcessor.process(TestMachine, twilio)
 
     # simulate user pressing digit
-    twilio = Map.put(twilio, :Digits, digits)
+    twilio = Map.put(twilio, "Digits", digits)
     CallProcessor.process(TestMachine, twilio)
   end
 

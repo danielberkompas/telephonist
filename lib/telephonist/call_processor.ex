@@ -8,7 +8,6 @@ defmodule Telephonist.CallProcessor do
   """
 
   import Telephonist.Event, only: [notify: 2]
-  import Telephonist.Format, only: [atomize_keys: 1]
 
   @completed_statuses ["completed", "busy", "failed", "no-answer"]
 
@@ -39,7 +38,6 @@ defmodule Telephonist.CallProcessor do
   """
   @spec process(atom, map, map) :: Telephonist.State.t
   def process(machine, twilio, options \\ %{}) do
-    twilio = atomize_keys(twilio)
     notify :processing, {machine, twilio, options}
     call = find(twilio)
     do_processing(call, machine, twilio, options)
@@ -50,14 +48,14 @@ defmodule Telephonist.CallProcessor do
   ###
 
   defp find(twilio) do
-    sid = twilio[:CallSid] |> String.to_atom
+    sid = twilio["CallSid"]
 
     case storage.find(sid) do
       {:ok, call} ->
         notify :lookup_succeeded, call
         call
       {:error, _} ->
-        call = {sid, twilio[:CallStatus], nil}
+        call = {sid, twilio["CallStatus"], nil}
         notify :lookup_failed, call
         call
     end
@@ -65,7 +63,7 @@ defmodule Telephonist.CallProcessor do
 
   # When the call is complete
   defp do_processing({sid, _, state} = call, machine,
-                     %{CallStatus: status} = twilio, options)
+                     %{"CallStatus" => status} = twilio, options)
   when status in @completed_statuses do
     notify :completed, {sid, machine, twilio, options}
     state = Map.merge %{machine: machine, options: options}, state || %{}
@@ -78,8 +76,8 @@ defmodule Telephonist.CallProcessor do
   end
 
   # When the call is ongoing
-  defp do_processing({sid, _, state} = call, machine,
-                     %{CallStatus: status} = twilio, options) do
+  defp do_processing({sid, _, _} = call, machine,
+                     %{"CallStatus" => status} = twilio, options) do
     state = get_next_state(call, machine, twilio, options)
 
     call = {sid, status, state}

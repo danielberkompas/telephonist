@@ -29,12 +29,12 @@ defmodule Telephonist.Regression.ModifyStateTest do
       say "Your ETA is confirmed to be #{job.eta.confirmed} minutes"
     end
 
-    def transition(:prompt, %{Digits: minutes} = twilio, meta) do
+    def transition(:prompt, %{"Digits" => minutes} = twilio, meta) do
       meta = Map.put(meta, :eta, %{unconfirmed: minutes})
       state :confirmation, twilio, meta
     end
 
-    def transition(:confirmation, %{Digits: "1"} = twilio, meta) do
+    def transition(:confirmation, %{"Digits" => "1"} = twilio, meta) do
       minutes = meta.eta.unconfirmed
       meta = %{meta | eta: %{confirmed: minutes}}
       state :confirmed, twilio, meta
@@ -45,19 +45,19 @@ defmodule Telephonist.Regression.ModifyStateTest do
 
   test "entering digits is saved for the next state" do
     twilio = %{
-      CallSid: "state-modification",
-      CallStatus: "in-progress",
+      "CallSid" => "state-modification",
+      "CallStatus" => "in-progress",
     }
 
     # set up initial state
     CallProcessor.process(TestMachine, twilio)
 
     # simulate user entrering ETA
-    twilio = Map.put(twilio, :Digits, "2")
+    twilio = Map.put(twilio, "Digits", "2")
     CallProcessor.process(TestMachine, twilio)
 
     # simulate user confirming ETA
-    twilio = Map.put(twilio, :Digits, "1")
+    twilio = Map.put(twilio, "Digits", "1")
     state = CallProcessor.process(TestMachine, twilio)
 
     assert state.twiml =~ "Your ETA is confirmed to be 2 minutes"
