@@ -36,7 +36,7 @@ defmodule Telephonist.StateMachine do
   - `on_transition_error/4`
   """
 
-  @type call       :: Telephonist.CallManager.call
+  @type call       :: {String.t, String.t, Telephonist.State.t}
   @type machine    :: atom
   @type state_name :: atom
   @type twilio     :: map

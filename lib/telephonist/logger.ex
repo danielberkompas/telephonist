@@ -23,7 +23,7 @@ defmodule Telephonist.Logger do
 
   @doc false
   def handle_event({:processing, {_, twilio, _} = params}, _state) do
-    log twilio[:CallSid], "Processing: #{inspect params}"
+    log twilio["CallSid"], "Processing: #{inspect params}"
   end
 
   def handle_event({:lookup_succeeded, {sid, status, state}}, _state) do

@@ -55,12 +55,12 @@ defmodule Telephonist do
         end
 
         # If the user pressed "1" on their keypad, transition to English state
-        def transition(:choose_language, %{Digits: "1"} = twilio, options) do
+        def transition(:choose_language, %{"Digits" => "1"} = twilio, options) do
           state :english, twilio, options
         end
 
         # If the user pressed "2" on their keypad, transition to Spanish state
-        def transition(:choose_language, %{Digits: "2"} = twilio, options) do
+        def transition(:choose_language, %{"Digits" => "2"} = twilio, options) do
           state :spanish, twilio, options
         end
 

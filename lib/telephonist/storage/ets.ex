@@ -17,19 +17,19 @@ defmodule Telephonist.Storage.ETS do
   ## Parameters
 
   - `call`: A tuple in the format `{sid, status, state}` where:
-      - `sid`: an atom representing the Twilio call SID.
+      - `sid`: a binary representing the Twilio call SID.
       - `status`: a binary representing the Twilio status. (e.g., "in-progress")
       - `state`: a `Telephonist.State`.
 
   ## Examples
 
-      iex> Storage.save({:sid, "in-progress", %Telephonist.State{}})
+      iex> Storage.save({"sid", "in-progress", %Telephonist.State{}})
       :ok
 
       iex> Storage.save(:invalid)
       {:error, "Call must be in format: {sid, status, state}, was :invalid"}
   """
-  def save({sid, _status, _state} = call) when is_atom(sid) do
+  def save({_sid, _status, _state} = call) do
     :ets.insert(__MODULE__, call)
     :ok
   end
@@ -38,21 +38,21 @@ defmodule Telephonist.Storage.ETS do
     {:error, msg}
   end
 
-  @doc """
+  @doc ~S"""
   Lookup the state of an ongoing call.
 
   ## Parameters
 
-  - `sid`: An atom represnting the Twilio call SID.
+  - `sid`: A string represnting the Twilio call SID.
 
   ## Examples
 
-      iex> Storage.save({:sid, "in-progress", %{}})
-      ...> Storage.find(:sid)
-      {:ok, {:sid, "in-progress", %{}}}
+      iex> Storage.save({"sid", "in-progress", %{}})
+      ...> Storage.find("sid")
+      {:ok, {"sid", "in-progress", %{}}}
 
-      iex> Storage.find(:nonexistent)
-      {:error, "No call with SID :nonexistent is in progress."}
+      iex> Storage.find("nonexistent")
+      {:error, "No call with SID \"nonexistent\" is in progress."}
   """
   def find(sid) do
     case :ets.lookup(__MODULE__, sid) do
@@ -61,30 +61,24 @@ defmodule Telephonist.Storage.ETS do
     end
   end
 
-  @doc """
+  @doc ~S"""
   Delete a call status from the Storage.Storage database.
 
   ## Parameters
 
-  - `call` or `sid`: Either a call tuple or atom SID.
+  - `call` or `sid`: Either a call tuple or SID.
 
   ## Examples
 
-      iex> Storage.save({:delete, "in-progress", %{}})
-      ...> Storage.delete(:delete)
-      ...> Storage.find(:delete)
-      {:error, "No call with SID :delete is in progress."}
-
-      iex> Storage.delete("invalid")
-      {:error, "SID must be an atom, was \\"invalid\\""}
+      iex> Storage.save({"delete", "in-progress", %{}})
+      ...> Storage.delete("delete")
+      ...> Storage.find("delete")
+      {:error, "No call with SID \"delete\" is in progress."}
   """
   def delete({sid, _, _}), do: delete(sid)
-  def delete(sid) when is_atom(sid) do
+  def delete(sid) do
     :ets.delete(__MODULE__, sid)
     :ok
-  end
-  def delete(invalid) do
-    {:error, "SID must be an atom, was #{inspect invalid}"}
   end
 
   ##
