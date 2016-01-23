@@ -9,7 +9,13 @@ defmodule Telephonist.CallProcessor do
 
   import Telephonist.Event, only: [notify: 2]
 
+  alias Telephonist.Call
+
   @completed_statuses ["completed", "busy", "failed", "no-answer"]
+
+  @type machine :: module
+  @type twilio :: %{String.t => String.t}
+  @type data :: map
 
   @doc """
   Process a call with a given default `Telephonist.StateMachine`. Returns a new
@@ -38,7 +44,7 @@ defmodule Telephonist.CallProcessor do
         render conn, xml: state.twiml
       end
   """
-  @spec process(atom, map, map) :: Telephonist.State.t
+  @spec process(machine, twilio, data) :: Telephonist.State.t
   def process(machine, twilio, data \\ %{}) do
     notify :processing, {machine, twilio, data}
     call = find(twilio)
@@ -54,57 +60,56 @@ defmodule Telephonist.CallProcessor do
 
     case storage.find(sid) do
       {:ok, call} ->
-        notify :lookup_succeeded, call
+        notify :call_found, call
         call
       {:error, _} ->
-        call = {sid, twilio["CallStatus"], nil}
-        notify :lookup_failed, call
+        call = Call.new(sid, twilio["CallStatus"])
+        notify :call_not_found, call
         call
     end
   end
 
   # When the call is complete
-  defp do_processing({sid, _, state} = call, machine,
-                     %{"CallStatus" => status} = twilio, data)
+  defp do_processing(call, machine, %{"CallStatus" => status} = twilio, data)
   when status in @completed_statuses do
-    notify :completed, {sid, machine, twilio, data}
-    state = Map.merge %{machine: machine, data: data}, state || %{}
+    state =
+      %{machine: machine, data: data}
+      |> Map.merge(call.state || %{})
+      |> Telephonist.State.complete
 
-    storage.save(call) # For debugging, garbage collecting
     :ok = state.machine.on_complete(call, twilio, state.data)
     storage.delete(call)
 
-    Telephonist.State.complete(state)
+    call = %{call | state: state}
+    notify :completed, call
+    call.state
   end
 
   # When the call is ongoing
-  defp do_processing({sid, _, _} = call, machine,
-                     %{"CallStatus" => status} = twilio, data) do
+  defp do_processing(call, machine, twilio, data) do
     state = get_next_state(call, machine, twilio, data)
+    call = %{call | state: state}
 
-    call = {sid, status, state}
     storage.save(call)
     notify :new_state, call
-
     state
   end
 
   # When the call hasn't been tracked yet
-  defp get_next_state({_, _, nil}, machine, twilio, data) do
+  defp get_next_state(%{state: nil}, machine, twilio, data) do
     machine.state(machine.initial_state, twilio, data)
   end
 
   # When the call has been tracked already
-  defp get_next_state({sid, _, state}, _, twilio, data) do
+  defp get_next_state(%{state: state} = call, _, twilio, data) do
     try do
-      notify :transition, {sid, state.machine, state.name, twilio, data}
       data = Map.merge(data, state.data)
+      notify :transition, {call, twilio, data}
       state.machine.transition(state.name, twilio, data)
     rescue
-      e ->
-        notify :transition_failed, {sid, e, state.machine, state.name,
-                                    twilio, data}
-        state.machine.on_transition_error(e, state.name, twilio, data)
+      exception ->
+        notify :transition_failed, {exception, call, twilio, data}
+        state.machine.on_transition_error(exception, state.name, twilio, data)
     end
   end
 

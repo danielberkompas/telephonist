@@ -4,23 +4,20 @@ defmodule Telephonist.Storage do
   be persisted in any kind of backend that implements the behaviour.
   """
 
-  @type sid    :: String.t
-  @type status :: String.t
-  @type call   :: {sid, status, Telephonist.State.t}
   @type error  :: {:error, String.t}
 
   @doc """
   Save an ongoing call to the storage system.
   """
-  @callback save(call) :: :ok | error
+  @callback save(Telephonist.Call.t) :: :ok | error
 
   @doc """
   Load a given call out of the storage system using its SID.
   """
-  @callback find(sid) :: {:ok, call} | error
+  @callback find(Telephonist.Call.sid) :: {:ok, Telephonist.Call.t} | error
 
   @doc """
   Delete a call from the storage system by its SID.
   """
-  @callback delete(sid) :: :ok | error
+  @callback delete(Telephonist.Call.sid) :: :ok | error
 end

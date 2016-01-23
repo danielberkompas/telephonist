@@ -103,12 +103,12 @@ defmodule Telephonist.CallProcessorTest do
   end
 
   defp assert_saved_status(sid, status) do
-    {:ok, {_sid, saved_status, _state}} = storage.find(sid)
+    {:ok, %{status: saved_status}} = storage.find(sid)
     assert saved_status == status
   end
 
   defp assert_saved_state(sid, state) do
-    {:ok, {_sid, _status, saved_state}} = storage.find(sid)
+    {:ok, %{state: saved_state}} = storage.find(sid)
     assert saved_state == state
   end
 

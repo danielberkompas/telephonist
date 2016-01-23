@@ -26,7 +26,7 @@ defmodule Telephonist.State do
 
   @type t :: %__MODULE__{
                name: atom,
-               machine: atom,
+               machine: module,
                data: map,
                twiml: String.t
              }
