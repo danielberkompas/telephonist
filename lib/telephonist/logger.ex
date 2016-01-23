@@ -26,31 +26,33 @@ defmodule Telephonist.Logger do
     log twilio["CallSid"], "Processing: #{inspect params}"
   end
 
-  def handle_event({:lookup_succeeded, {sid, status, state}}, _state) do
-    log sid, "Call found in status #{inspect status} and #{inspect state}"
+  def handle_event({:call_found, call}, _state) do
+    log call.sid, """
+    Call found in status #{inspect call.status} and #{inspect call.state}"
+    """
   end
 
-  def handle_event({:lookup_failed, {sid, _, _}}, _state) do
-    log sid, "Call not found"
+  def handle_event({:call_not_found, call}, _state) do
+    log call.sid, "Call not found"
   end
 
-  def handle_event({:completed, {sid, _machine, _twilio, _options}}, _state) do
-    log sid, "Call completed."
+  def handle_event({:completed, call}, _state) do
+    log call.sid, "Call completed"
   end
 
-  def handle_event({:transition, {sid, _state_machine, state_name, _twilio,
-                                  _options}}, _state) do
-    log sid, "Transitioning to #{inspect state_name}"
+  def handle_event({:transition, {call, twilio, _data}}, _state) do
+    log call.sid, """
+    Transitioning on #{inspect call.state.name} in response to #{inspect twilio}
+    """
   end
 
   def handle_event({:transition_failed,
-                    {sid, _exception, _state_machine, state_name,
-                     _twilio, _options}}, _state) do
-    log sid, "Transition to #{inspect state_name} failed!"
+                    {_exception, call, _twilio, _data}}, _state) do
+    log call.sid, "Transition on #{inspect call.state.name} failed!"
   end
 
-  def handle_event({:new_state, {sid, _status, state}}, _state) do
-    log sid, "New state: #{inspect state}"
+  def handle_event({:new_state, call}, _state) do
+    log call.sid, "New state: #{inspect call.state}"
   end
 
   def handle_event(_event, _state), do: {:ok, :not_handled}

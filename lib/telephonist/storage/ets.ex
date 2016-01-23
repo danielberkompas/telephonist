@@ -11,53 +11,41 @@ defmodule Telephonist.Storage.ETS do
   # performance.
   use GenServer
 
+  alias Telephonist.Call
+
   @doc """
   Save the state of an ongoing call.
 
-  ## Parameters
-
-  - `call`: A tuple in the format `{sid, status, state}` where:
-      - `sid`: a binary representing the Twilio call SID.
-      - `status`: a binary representing the Twilio status. (e.g., "in-progress")
-      - `state`: a `Telephonist.State`.
-
   ## Examples
 
-      iex> Storage.save({"sid", "in-progress", %Telephonist.State{}})
+      iex> Storage.save(Call.new("sid", "in-progress"))
       :ok
-
-      iex> Storage.save(:invalid)
-      {:error, "Call must be in format: {sid, status, state}, was :invalid"}
   """
-  def save({_sid, _status, _state} = call) do
-    :ets.insert(__MODULE__, call)
+  @spec save(Call.t) :: :ok
+  def save(call) do
+    :ets.insert(__MODULE__, {call.sid, call})
     :ok
-  end
-  def save(invalid) do
-    msg = "Call must be in format: {sid, status, state}, was #{inspect invalid}"
-    {:error, msg}
   end
 
   @doc ~S"""
   Lookup the state of an ongoing call.
 
-  ## Parameters
-
-  - `sid`: A string represnting the Twilio call SID.
-
   ## Examples
 
-      iex> Storage.save({"sid", "in-progress", %{}})
+      iex> Storage.save(Call.new("sid", "in-progress"))
       ...> Storage.find("sid")
-      {:ok, {"sid", "in-progress", %{}}}
+      {:ok, %Call{sid: "sid", status: "in-progress"}}
 
       iex> Storage.find("nonexistent")
       {:error, "No call with SID \"nonexistent\" is in progress."}
   """
+  @spec find(Call.sid) :: {:ok, Call.t} | {:error, String.t}
   def find(sid) do
     case :ets.lookup(__MODULE__, sid) do
-      []       -> {:error, "No call with SID #{inspect sid} is in progress."}
-      [call|_] -> {:ok, call}
+      [] ->
+        {:error, "No call with SID #{inspect sid} is in progress."}
+      [{_sid, call}|_] ->
+        {:ok, call}
     end
   end
 
@@ -70,12 +58,12 @@ defmodule Telephonist.Storage.ETS do
 
   ## Examples
 
-      iex> Storage.save({"delete", "in-progress", %{}})
+      iex> Storage.save(Call.new("delete", "in-progress"))
       ...> Storage.delete("delete")
       ...> Storage.find("delete")
       {:error, "No call with SID \"delete\" is in progress."}
   """
-  def delete({sid, _, _}), do: delete(sid)
+  def delete(%{sid: sid}), do: delete(sid)
   def delete(sid) do
     :ets.delete(__MODULE__, sid)
     :ok
