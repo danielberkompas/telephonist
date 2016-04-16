@@ -4,6 +4,7 @@ Telephonist
 [![Hex Version](http://img.shields.io/hexpm/v/telephonist.svg)](https://hex.pm/packages/telephonist)
 [![Build Status](https://travis-ci.org/danielberkompas/telephonist.svg)](https://travis-ci.org/danielberkompas/telephonist)
 [![Inline docs](http://inch-ci.org/github/danielberkompas/telephonist.svg?branch=master)](http://inch-ci.org/github/danielberkompas/telephonist)
+[![Deps Status](https://beta.hexfaktor.org/badge/all/github/danielberkompas/telephonist.svg)](https://beta.hexfaktor.org/github/danielberkompas/telephonist)
 
 Telephonist makes it easy to design state machines for [Twilio][twilio] calls. 
 These state machines bring TwiML and logic together in one place, making call 
