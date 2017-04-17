@@ -12,13 +12,28 @@ defmodule Telephonist.Logger do
 
   require Logger
 
+  defmodule AddLoggerHandler do
+    @moduledoc """
+    A GenServer which adds Telephonist.Logger handler to Telephonist.Event
+
+    It links to Telephonist.Event, and is supervised (as Telephonist.Logger)
+    so that if the manager should die, this GenServer will too, and the
+    handler will be re-added when they restart.
+    """
+    use GenServer
+
+    def init(_) do
+      true = Process.whereis(Telephonist.Event) |> Process.link
+      :ok = GenEvent.add_handler(Telephonist.Event, Telephonist.Logger, [])
+      {:ok, nil}
+    end
+  end
+
   @doc """
   Start the `Telephonist.Logger` process.
   """
   def start_link do
-    handler = GenEvent.start_link(name: __MODULE__)
-    GenEvent.add_handler(Telephonist.Event, Telephonist.Logger, [])
-    handler
+    GenServer.start_link(AddLoggerHandler, nil)
   end
 
   @doc false
